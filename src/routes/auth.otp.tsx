@@ -1,0 +1,125 @@
+import { useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
+import { z } from "zod";
+
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+
+const searchSchema = z.object({ phone: z.string() });
+
+export const Route = createFileRoute("/auth/otp")({
+  validateSearch: searchSchema,
+  component: OtpPage,
+});
+
+function OtpPage() {
+  const { phone } = Route.useSearch();
+  const navigate = useNavigate();
+  const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const verify = async () => {
+    if (code.length !== 6) {
+      toast.error("Enter the full 6-digit code");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        phone,
+        token: code,
+        type: "sms",
+      });
+      if (error) throw error;
+      toast.success("Verified!");
+      // If brand-new user (no roles), send to role picker; else to app.
+      const userId = data.user?.id;
+      if (userId) {
+        const { data: roles } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId)
+          .limit(1);
+        if (!roles || roles.length === 0) {
+          navigate({ to: "/onboarding/role" });
+          return;
+        }
+      }
+      navigate({ to: "/app" });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Invalid code";
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resend = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOtp({ phone });
+      if (error) throw error;
+      toast.success("A new code is on the way");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Could not resend";
+      toast.error(message);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="mx-auto flex max-w-md items-center justify-between px-6 py-5">
+        <Link
+          to="/auth"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back
+        </Link>
+      </header>
+
+      <main className="mx-auto max-w-md px-6 pb-12 pt-4">
+        <h1 className="font-display text-3xl font-bold tracking-tight">
+          Verify your number
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          We sent a 6-digit code to{" "}
+          <span className="font-medium text-foreground">{phone}</span>.
+        </p>
+
+        <div className="mt-8 flex justify-center">
+          <InputOTP maxLength={6} value={code} onChange={setCode}>
+            <InputOTPGroup>
+              <InputOTPSlot index={0} />
+              <InputOTPSlot index={1} />
+              <InputOTPSlot index={2} />
+              <InputOTPSlot index={3} />
+              <InputOTPSlot index={4} />
+              <InputOTPSlot index={5} />
+            </InputOTPGroup>
+          </InputOTP>
+        </div>
+
+        <Button
+          onClick={verify}
+          disabled={loading || code.length !== 6}
+          className="mt-8 h-11 w-full rounded-full text-sm font-semibold"
+        >
+          {loading ? "Verifying…" : "Verify & continue"}
+        </Button>
+        <button
+          onClick={resend}
+          className="mt-3 block w-full text-center text-sm text-muted-foreground hover:text-foreground"
+        >
+          Didn't get a code?{" "}
+          <span className="font-medium text-primary">Resend</span>
+        </button>
+      </main>
+    </div>
+  );
+}
