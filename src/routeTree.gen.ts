@@ -10,12 +10,21 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as OnboardingStudentRouteImport } from './routes/onboarding.student'
+import { Route as OnboardingRoleRouteImport } from './routes/onboarding.role'
+import { Route as OnboardingProviderRouteImport } from './routes/onboarding.provider'
 import { Route as AuthOtpRouteImport } from './routes/auth.otp'
+import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated.app'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -23,39 +32,99 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OnboardingStudentRoute = OnboardingStudentRouteImport.update({
+  id: '/onboarding/student',
+  path: '/onboarding/student',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoleRoute = OnboardingRoleRouteImport.update({
+  id: '/onboarding/role',
+  path: '/onboarding/role',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingProviderRoute = OnboardingProviderRouteImport.update({
+  id: '/onboarding/provider',
+  path: '/onboarding/provider',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthOtpRoute = AuthOtpRouteImport.update({
   id: '/otp',
   path: '/otp',
   getParentRoute: () => AuthRoute,
 } as any)
+const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
+  '/app': typeof AuthenticatedAppRoute
   '/auth/otp': typeof AuthOtpRoute
+  '/onboarding/provider': typeof OnboardingProviderRoute
+  '/onboarding/role': typeof OnboardingRoleRoute
+  '/onboarding/student': typeof OnboardingStudentRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
+  '/app': typeof AuthenticatedAppRoute
   '/auth/otp': typeof AuthOtpRoute
+  '/onboarding/provider': typeof OnboardingProviderRoute
+  '/onboarding/role': typeof OnboardingRoleRoute
+  '/onboarding/student': typeof OnboardingStudentRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
+  '/_authenticated/app': typeof AuthenticatedAppRoute
   '/auth/otp': typeof AuthOtpRoute
+  '/onboarding/provider': typeof OnboardingProviderRoute
+  '/onboarding/role': typeof OnboardingRoleRoute
+  '/onboarding/student': typeof OnboardingStudentRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/auth/otp'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/app'
+    | '/auth/otp'
+    | '/onboarding/provider'
+    | '/onboarding/role'
+    | '/onboarding/student'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/auth/otp'
-  id: '__root__' | '/' | '/auth' | '/auth/otp'
+  to:
+    | '/'
+    | '/auth'
+    | '/app'
+    | '/auth/otp'
+    | '/onboarding/provider'
+    | '/onboarding/role'
+    | '/onboarding/student'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/app'
+    | '/auth/otp'
+    | '/onboarding/provider'
+    | '/onboarding/role'
+    | '/onboarding/student'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
+  OnboardingProviderRoute: typeof OnboardingProviderRoute
+  OnboardingRoleRoute: typeof OnboardingRoleRoute
+  OnboardingStudentRoute: typeof OnboardingStudentRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -67,11 +136,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/student': {
+      id: '/onboarding/student'
+      path: '/onboarding/student'
+      fullPath: '/onboarding/student'
+      preLoaderRoute: typeof OnboardingStudentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/role': {
+      id: '/onboarding/role'
+      path: '/onboarding/role'
+      fullPath: '/onboarding/role'
+      preLoaderRoute: typeof OnboardingRoleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/provider': {
+      id: '/onboarding/provider'
+      path: '/onboarding/provider'
+      fullPath: '/onboarding/provider'
+      preLoaderRoute: typeof OnboardingProviderRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/otp': {
@@ -81,8 +178,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthOtpRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/_authenticated/app': {
+      id: '/_authenticated/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AuthenticatedAppRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
+
+interface AuthenticatedRouteChildren {
+  AuthenticatedAppRoute: typeof AuthenticatedAppRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAppRoute: AuthenticatedAppRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
 
 interface AuthRouteChildren {
   AuthOtpRoute: typeof AuthOtpRoute
@@ -96,8 +212,22 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
+  OnboardingProviderRoute: OnboardingProviderRoute,
+  OnboardingRoleRoute: OnboardingRoleRoute,
+  OnboardingStudentRoute: OnboardingStudentRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
