@@ -76,7 +76,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       meta: [
         { charSet: "utf-8" },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
-        { title: "Kuravilangad Gig Hub — Local micro-gigs for students" },
+        { title: "Gig Hub — Quick local gigs near you" },
         {
           name: "description",
           content:
@@ -94,6 +94,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         },
         { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary" },
+        { property: "og:title", content: "Gig Hub — Quick local gigs near you" },
+        { name: "twitter:title", content: "Gig Hub — Quick local gigs near you" },
+        { name: "description", content: "Gig Hub Connect is a mobile-first web app for local micro-gigs." },
+        { property: "og:description", content: "Gig Hub Connect is a mobile-first web app for local micro-gigs." },
+        { name: "twitter:description", content: "Gig Hub Connect is a mobile-first web app for local micro-gigs." },
       ],
       links: [
         { rel: "stylesheet", href: appCss },
