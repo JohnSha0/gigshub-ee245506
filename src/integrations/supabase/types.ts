@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_actions: {
+        Row: {
+          action: string
+          actor_id: string
+          created_at: string
+          id: string
+          reason: string | null
+          target_id: string | null
+          target_type: string
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          target_id?: string | null
+          target_type: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          target_id?: string | null
+          target_type?: string
+        }
+        Relationships: []
+      }
       applications: {
         Row: {
           created_at: string
@@ -118,6 +148,7 @@ export type Database = {
           description: string | null
           duration: string | null
           id: string
+          locality_id: string | null
           location: string
           pay_text: string
           provider_id: string
@@ -130,6 +161,7 @@ export type Database = {
           description?: string | null
           duration?: string | null
           id?: string
+          locality_id?: string | null
           location: string
           pay_text: string
           provider_id: string
@@ -142,11 +174,56 @@ export type Database = {
           description?: string | null
           duration?: string | null
           id?: string
+          locality_id?: string | null
           location?: string
           pay_text?: string
           provider_id?: string
           status?: string
           title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gigs_locality_id_fkey"
+            columns: ["locality_id"]
+            isOneToOne: false
+            referencedRelation: "localities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      localities: {
+        Row: {
+          created_at: string
+          district: string | null
+          id: string
+          is_active: boolean
+          lat: number
+          lng: number
+          name: string
+          slug: string
+          state: string | null
+        }
+        Insert: {
+          created_at?: string
+          district?: string | null
+          id?: string
+          is_active?: boolean
+          lat: number
+          lng: number
+          name: string
+          slug: string
+          state?: string | null
+        }
+        Update: {
+          created_at?: string
+          district?: string | null
+          id?: string
+          is_active?: boolean
+          lat?: number
+          lng?: number
+          name?: string
+          slug?: string
+          state?: string | null
         }
         Relationships: []
       }
@@ -214,36 +291,62 @@ export type Database = {
       }
       profiles: {
         Row: {
+          address_text: string | null
           avatar_url: string | null
           bio: string | null
           created_at: string
           display_name: string
+          extra_locality_ids: string[]
+          home_locality_id: string | null
           id: string
+          is_blocked: boolean
+          lat: number | null
+          lng: number | null
           location: string | null
           phone: string | null
           updated_at: string
         }
         Insert: {
+          address_text?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
           display_name: string
+          extra_locality_ids?: string[]
+          home_locality_id?: string | null
           id?: string
+          is_blocked?: boolean
+          lat?: number | null
+          lng?: number | null
           location?: string | null
           phone?: string | null
           updated_at?: string
         }
         Update: {
+          address_text?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string
+          extra_locality_ids?: string[]
+          home_locality_id?: string | null
           id?: string
+          is_blocked?: boolean
+          lat?: number | null
+          lng?: number | null
           location?: string | null
           phone?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_home_locality_id_fkey"
+            columns: ["home_locality_id"]
+            isOneToOne: false
+            referencedRelation: "localities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       skills: {
         Row: {
@@ -331,9 +434,23 @@ export type Database = {
         }
         Returns: boolean
       }
+      nearby_localities: {
+        Args: { p_lat: number; p_lng: number; p_radius_km?: number }
+        Returns: {
+          distance_km: number
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+        }[]
+      }
+      set_user_blocked: {
+        Args: { p_blocked: boolean; p_reason?: string; p_user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
-      app_role: "student" | "provider"
+      app_role: "student" | "provider" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -461,7 +578,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["student", "provider"],
+      app_role: ["student", "provider", "admin"],
     },
   },
 } as const
