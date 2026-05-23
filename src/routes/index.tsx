@@ -66,19 +66,19 @@ function Landing() {
             <div className="absolute -inset-6 -z-10 rounded-[2.5rem] bg-gradient-to-br from-primary-soft via-background to-accent/10 blur-2xl" />
             <div className="space-y-3 rounded-3xl border border-border bg-surface p-4 shadow-soft">
               <PreviewCard
-                title="10th Grade Physics Tuition"
-                meta="Near Deva Matha Campus · ₹300/hr"
-                badge="Tuition"
+                title="Your gig appears here"
+                meta="Local area · Pay shown here"
+                badge="Example"
               />
               <PreviewCard
-                title="Social Media Poster Design"
-                meta="Remote · ₹1500 fixed"
-                badge="Design"
+                title="Another sample gig"
+                meta="Remote or nearby · Example pay"
+                badge="Example"
               />
               <PreviewCard
-                title="Excel Inventory Cleanup"
-                meta="Kuravilangad Junction · ₹800/day"
-                badge="Tech"
+                title="Real gigs from your town"
+                meta="Posted by neighbours · Example pay"
+                badge="Example"
               />
             </div>
           </div>
