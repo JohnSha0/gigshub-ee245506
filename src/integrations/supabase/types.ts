@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_actions: {
+        Row: {
+          action: string
+          actor_id: string
+          created_at: string
+          id: string
+          reason: string | null
+          target_id: string | null
+          target_type: string
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          target_id?: string | null
+          target_type: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          target_id?: string | null
+          target_type?: string
+        }
+        Relationships: []
+      }
       applications: {
         Row: {
           created_at: string
@@ -413,6 +443,10 @@ export type Database = {
           name: string
           slug: string
         }[]
+      }
+      set_user_blocked: {
+        Args: { p_blocked: boolean; p_reason?: string; p_user_id: string }
+        Returns: undefined
       }
     }
     Enums: {
