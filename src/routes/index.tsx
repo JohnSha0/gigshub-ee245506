@@ -1,10 +1,20 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
-import { Sparkles, MapPin, Users, Briefcase, ArrowRight } from "lucide-react";
+import { MapPin, Users, Briefcase, Sparkles, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { BRAND_NAME, BRAND_TAGLINE, BrandMark } from "@/components/Brand";
 
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: `${BRAND_NAME} — ${BRAND_TAGLINE}` },
+      {
+        name: "description",
+        content:
+          "Gigs Hub is a hyper-local marketplace for quick gigs near you. Find tutoring, design, photography, event help, errands and more — in your town.",
+      },
+    ],
+  }),
   beforeLoad: async () => {
-    // Send signed-in users straight into the app.
     const { data } = await supabase.auth.getSession();
     if (data.session) throw redirect({ to: "/app" });
   },
@@ -15,14 +25,7 @@ function Landing() {
   return (
     <div className="min-h-screen bg-background">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
-        <div className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-            <Sparkles className="h-5 w-5" />
-          </div>
-          <span className="font-display text-lg font-bold">
-            Kuravilangad Gig Hub
-          </span>
-        </div>
+        <BrandMark />
         <Link
           to="/auth"
           className="rounded-full border border-border bg-surface px-5 py-2 text-sm font-medium transition hover:border-primary hover:text-primary"
@@ -36,15 +39,15 @@ function Landing() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-primary-soft px-3 py-1 text-xs font-medium text-primary">
               <MapPin className="h-3.5 w-3.5" />
-              Hyper-local · Kuravilangad
+              Hyper-local · pick your town
             </div>
             <h1 className="mt-5 font-display text-4xl font-bold leading-tight tracking-tight md:text-6xl">
-              Earn nearby. <span className="text-primary">Hire nearby.</span>
+              Quick gigs <span className="text-primary">near you.</span>
             </h1>
             <p className="mt-5 max-w-md text-base text-muted-foreground md:text-lg">
-              A tiny marketplace built for our town. Students post their skills.
-              Shops, parents and event organizers post quick gigs. Everyone
-              connects in minutes.
+              Tutoring, design, photography, events, errands and more — posted by
+              neighbours in your locality. Match. Chat. Get paid. Now live in
+              Kuravilangad and rolling out to nearby towns.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
@@ -86,41 +89,36 @@ function Landing() {
 
         <section className="mt-24 grid gap-6 md:grid-cols-3">
           <Feature
-            icon={<Briefcase className="h-5 w-5" />}
-            title="Real local gigs"
-            body="From tuition near Deva Matha to event help at the Junction — work that's a walk away."
+            icon={<MapPin className="h-5 w-5" />}
+            title="Pick your locality"
+            body="BookMyShow-style picker with GPS detect and nearby-town matching within ~10 km."
           />
           <Feature
             icon={<Users className="h-5 w-5" />}
             title="Smart matches"
-            body="Post a gig and we instantly stack the top student profiles that match your tags."
+            body="Post a gig and we stack the top student profiles that fit your skills and area."
           />
           <Feature
-            icon={<Sparkles className="h-5 w-5" />}
-            title="Built for both sides"
-            body="One toggle to flip between Student and Provider. Same account, both worlds."
+            icon={<Briefcase className="h-5 w-5" />}
+            title="One account, both sides"
+            body="Flip between Student and Provider with a single toggle. Same login, both worlds."
           />
         </section>
       </main>
 
       <footer className="border-t border-border">
-        <div className="mx-auto max-w-6xl px-6 py-6 text-center text-xs text-muted-foreground">
-          Made for the people of Kuravilangad.
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
+            <Sparkles className="h-3.5 w-3.5" /> {BRAND_NAME}
+          </span>
+          <span>{BRAND_TAGLINE}</span>
         </div>
       </footer>
     </div>
   );
 }
 
-function PreviewCard({
-  title,
-  meta,
-  badge,
-}: {
-  title: string;
-  meta: string;
-  badge: string;
-}) {
+function PreviewCard({ title, meta, badge }: { title: string; meta: string; badge: string }) {
   return (
     <div className="flex items-center justify-between rounded-2xl border border-border bg-background p-4">
       <div>
@@ -134,15 +132,7 @@ function PreviewCard({
   );
 }
 
-function Feature({
-  icon,
-  title,
-  body,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  body: string;
-}) {
+function Feature({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) {
   return (
     <div className="rounded-3xl border border-border bg-surface p-6 shadow-soft">
       <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary-soft text-primary">

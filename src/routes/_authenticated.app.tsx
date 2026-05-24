@@ -64,6 +64,8 @@ interface Gig {
   description: string | null;
   created_at: string;
   provider_id: string;
+  locality_id: string | null;
+  locality_name?: string;
   tags: string[];
   provider_name?: string;
 }
@@ -81,7 +83,17 @@ interface Thread {
   provider_id: string;
 }
 
-const CATEGORIES = ["All", "Tuition", "Design", "Tech", "Retail", "Events"];
+const CATEGORIES = [
+  "All",
+  "Tuition",
+  "Design",
+  "Photography",
+  "Tech",
+  "Retail",
+  "Events",
+  "Social Media",
+  "Delivery",
+];
 
 function Dashboard() {
   const { user, roles, activeRole, setActiveRole, signOut } = useAuth();
@@ -113,7 +125,7 @@ function Dashboard() {
               <Sparkles className="h-5 w-5" />
             </div>
             <span className="hidden font-display text-base font-bold sm:block">
-              Gig Hub
+              Gigs Hub
             </span>
           </div>
 
@@ -309,7 +321,7 @@ function StudentFeed({
     const { data: g } = await supabase
       .from("gigs")
       .select(
-        "id, title, category, pay_text, duration, location, description, created_at, provider_id",
+        "id, title, category, pay_text, duration, location, description, created_at, provider_id, locality_id",
       )
       .order("created_at", { ascending: false })
       .limit(100);
@@ -612,7 +624,7 @@ function ProviderHome({
     const { data: g } = await supabase
       .from("gigs")
       .select(
-        "id, title, category, pay_text, duration, location, description, created_at, provider_id",
+        "id, title, category, pay_text, duration, location, description, created_at, provider_id, locality_id",
       )
       .eq("provider_id", userId)
       .order("created_at", { ascending: false });
