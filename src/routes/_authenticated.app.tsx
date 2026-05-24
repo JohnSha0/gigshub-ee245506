@@ -341,7 +341,7 @@ function StudentFeed({
     const { data: g } = await supabase
       .from("gigs")
       .select(
-        "id, title, category, pay_text, duration, location, description, created_at, provider_id",
+        "id, title, category, pay_text, duration, location, description, created_at, provider_id, locality_id",
       )
       .order("created_at", { ascending: false })
       .limit(100);
@@ -644,7 +644,7 @@ function ProviderHome({
     const { data: g } = await supabase
       .from("gigs")
       .select(
-        "id, title, category, pay_text, duration, location, description, created_at, provider_id",
+        "id, title, category, pay_text, duration, location, description, created_at, provider_id, locality_id",
       )
       .eq("provider_id", userId)
       .order("created_at", { ascending: false });
