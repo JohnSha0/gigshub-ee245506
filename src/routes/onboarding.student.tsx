@@ -112,9 +112,7 @@ function StudentOnboarding() {
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground">
             <Sparkles className="h-4 w-4" />
           </div>
-          <span className="font-display text-sm font-bold">
-            Kuravilangad Gig Hub
-          </span>
+          <span className="font-display text-sm font-bold">Gigs Hub</span>
         </div>
       </header>
 
