@@ -202,6 +202,7 @@ export type Database = {
           name: string
           slug: string
           state: string | null
+          status: string
         }
         Insert: {
           created_at?: string
@@ -213,6 +214,7 @@ export type Database = {
           name: string
           slug: string
           state?: string | null
+          status?: string
         }
         Update: {
           created_at?: string
@@ -224,8 +226,47 @@ export type Database = {
           name?: string
           slug?: string
           state?: string | null
+          status?: string
         }
         Relationships: []
+      }
+      locality_requests: {
+        Row: {
+          created_at: string
+          custom_name: string | null
+          id: string
+          locality_id: string | null
+          note: string | null
+          requester_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          custom_name?: string | null
+          id?: string
+          locality_id?: string | null
+          note?: string | null
+          requester_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          custom_name?: string | null
+          id?: string
+          locality_id?: string | null
+          note?: string | null
+          requester_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "locality_requests_locality_id_fkey"
+            columns: ["locality_id"]
+            isOneToOne: false
+            referencedRelation: "localities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       messages: {
         Row: {
