@@ -84,6 +84,8 @@ interface Gig {
   description: string | null;
   created_at: string;
   provider_id: string;
+  locality_id: string | null;
+  locality_name?: string;
   tags: string[];
   provider_name?: string;
 }
@@ -101,7 +103,17 @@ interface Thread {
   provider_id: string;
 }
 
-const CATEGORIES = ["All", "Tuition", "Design", "Tech", "Retail", "Events"];
+const CATEGORIES = [
+  "All",
+  "Tuition",
+  "Design",
+  "Photography",
+  "Tech",
+  "Retail",
+  "Events",
+  "Social Media",
+  "Delivery",
+];
 
 function Dashboard() {
   const { user, roles, activeRole, setActiveRole, signOut } = useAuth();
