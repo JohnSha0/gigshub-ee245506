@@ -12,7 +12,10 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 
-const searchSchema = z.object({ phone: z.string() });
+const searchSchema = z.object({
+  contact: z.string(),
+  channel: z.enum(["email", "sms"]).default("email"),
+});
 
 export const Route = createFileRoute("/auth/otp")({
   validateSearch: searchSchema,
@@ -20,7 +23,7 @@ export const Route = createFileRoute("/auth/otp")({
 });
 
 function OtpPage() {
-  const { phone } = Route.useSearch();
+  const { contact, channel } = Route.useSearch();
   const navigate = useNavigate();
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
@@ -32,14 +35,13 @@ function OtpPage() {
     }
     setLoading(true);
     try {
-      const { data, error } = await supabase.auth.verifyOtp({
-        phone,
-        token: code,
-        type: "sms",
-      });
+      const { data, error } = await supabase.auth.verifyOtp(
+        channel === "sms"
+          ? { phone: contact, token: code, type: "sms" }
+          : { email: contact, token: code, type: "email" },
+      );
       if (error) throw error;
       toast.success("Verified!");
-      // If brand-new user (no roles), send to role picker; else to app.
       const userId = data.user?.id;
       if (userId) {
         const { data: roles } = await supabase
@@ -54,8 +56,7 @@ function OtpPage() {
       }
       navigate({ to: "/app" });
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Invalid code";
-      toast.error(message);
+      toast.error(err instanceof Error ? err.message : "Invalid code");
     } finally {
       setLoading(false);
     }
@@ -63,12 +64,17 @@ function OtpPage() {
 
   const resend = async () => {
     try {
-      const { error } = await supabase.auth.signInWithOtp({ phone });
+      const { error } =
+        channel === "sms"
+          ? await supabase.auth.signInWithOtp({ phone: contact })
+          : await supabase.auth.signInWithOtp({
+              email: contact,
+              options: { shouldCreateUser: true },
+            });
       if (error) throw error;
       toast.success("A new code is on the way");
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Could not resend";
-      toast.error(message);
+      toast.error(err instanceof Error ? err.message : "Could not resend");
     }
   };
 
@@ -84,12 +90,10 @@ function OtpPage() {
       </header>
 
       <main className="mx-auto max-w-md px-6 pb-12 pt-4">
-        <h1 className="font-display text-3xl font-bold tracking-tight">
-          Verify your number
-        </h1>
+        <h1 className="font-display text-3xl font-bold tracking-tight">Enter your code</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           We sent a 6-digit code to{" "}
-          <span className="font-medium text-foreground">{phone}</span>.
+          <span className="font-medium text-foreground">{contact}</span>.
         </p>
 
         <div className="mt-8 flex justify-center">
@@ -116,8 +120,7 @@ function OtpPage() {
           onClick={resend}
           className="mt-3 block w-full text-center text-sm text-muted-foreground hover:text-foreground"
         >
-          Didn't get a code?{" "}
-          <span className="font-medium text-primary">Resend</span>
+          Didn't get a code? <span className="font-medium text-primary">Resend</span>
         </button>
       </main>
     </div>

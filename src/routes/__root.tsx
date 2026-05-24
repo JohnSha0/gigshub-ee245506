@@ -76,29 +76,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       meta: [
         { charSet: "utf-8" },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
-        { title: "Gig Hub — Quick local gigs near you" },
+        { title: "Gigs Hub — Quick gigs near you" },
         {
           name: "description",
           content:
-            "Hyper-local marketplace connecting Kuravilangad students with nearby tuition, design, tech, retail and event gigs.",
+            "Gigs Hub is a hyper-local marketplace for quick gigs near you — tutoring, design, photography, events, errands and more. Find and post work in your town.",
         },
-        { name: "author", content: "Kuravilangad Gig Hub" },
-        {
-          property: "og:title",
-          content: "Kuravilangad Gig Hub",
-        },
+        { name: "author", content: "Gigs Hub" },
+        { property: "og:type", content: "website" },
+        { property: "og:title", content: "Gigs Hub — Quick gigs near you" },
         {
           property: "og:description",
           content:
-            "Find local micro-gigs in Kuravilangad — tuition, design, tech, retail and events.",
+            "Find local micro-gigs near you — tutoring, design, photography, events, errands and more.",
         },
-        { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary" },
-        { property: "og:title", content: "Gig Hub — Quick local gigs near you" },
-        { name: "twitter:title", content: "Gig Hub — Quick local gigs near you" },
-        { name: "description", content: "Gig Hub Connect is a mobile-first web app for local micro-gigs." },
-        { property: "og:description", content: "Gig Hub Connect is a mobile-first web app for local micro-gigs." },
-        { name: "twitter:description", content: "Gig Hub Connect is a mobile-first web app for local micro-gigs." },
+        { name: "twitter:title", content: "Gigs Hub — Quick gigs near you" },
+        { name: "twitter:description", content: "Quick gigs near you. Tutoring, design, photography, events, errands and more." },
       ],
       links: [
         { rel: "stylesheet", href: appCss },
