@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
-import { GraduationCap, Briefcase, ArrowRight, Sparkles } from "lucide-react";
+import { GraduationCap, Briefcase, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, type AppRole } from "@/lib/auth";
-import { Button } from "@/components/ui/button";
+import { BrandMark, BRAND_NAME } from "@/components/Brand";
 
 export const Route = createFileRoute("/onboarding/role")({
+  head: () => ({ meta: [{ title: `Choose your role — ${BRAND_NAME}` }] }),
   beforeLoad: async () => {
     const { data } = await supabase.auth.getUser();
     if (!data.user) throw redirect({ to: "/auth" });
@@ -34,8 +35,7 @@ function RolePicker() {
       if (role === "student") navigate({ to: "/onboarding/student" });
       else navigate({ to: "/onboarding/provider" });
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to save";
-      toast.error(message);
+      toast.error(err instanceof Error ? err.message : "Failed to save");
     } finally {
       setPicking(null);
     }
@@ -44,14 +44,7 @@ function RolePicker() {
   return (
     <div className="min-h-screen bg-background">
       <header className="mx-auto flex max-w-xl items-center justify-between px-6 py-5">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <Sparkles className="h-4 w-4" />
-          </div>
-          <span className="font-display text-sm font-bold">
-            Kuravilangad Gig Hub
-          </span>
-        </div>
+        <BrandMark />
       </header>
 
       <main className="mx-auto max-w-xl px-6 pb-12 pt-4">
@@ -65,15 +58,15 @@ function RolePicker() {
         <div className="mt-8 grid gap-4">
           <RoleCard
             icon={<GraduationCap className="h-6 w-6" />}
-            title="I'm a Student"
-            body="Find gigs near me — tuition, design, tech, retail, events."
+            title="I'm looking for gigs"
+            body="Find work near you — tutoring, design, photography, events, errands."
             loading={picking === "student"}
             onClick={() => choose("student")}
           />
           <RoleCard
             icon={<Briefcase className="h-6 w-6" />}
-            title="I'm a Provider"
-            body="Post a gig and get matched with local students instantly."
+            title="I want to post gigs"
+            body="Post a gig and get matched with locals who can help, fast."
             loading={picking === "provider"}
             onClick={() => choose("provider")}
           />
@@ -84,17 +77,9 @@ function RolePicker() {
 }
 
 function RoleCard({
-  icon,
-  title,
-  body,
-  onClick,
-  loading,
+  icon, title, body, onClick, loading,
 }: {
-  icon: React.ReactNode;
-  title: string;
-  body: string;
-  onClick: () => void;
-  loading: boolean;
+  icon: React.ReactNode; title: string; body: string; onClick: () => void; loading: boolean;
 }) {
   return (
     <button
