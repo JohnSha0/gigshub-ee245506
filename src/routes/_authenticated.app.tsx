@@ -125,7 +125,7 @@ function Dashboard() {
               <Sparkles className="h-5 w-5" />
             </div>
             <span className="hidden font-display text-base font-bold sm:block">
-              Gigs Hub
+              Floq
             </span>
           </div>
 
