@@ -16,6 +16,7 @@ import {
   Check,
   Send,
   X,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -32,6 +33,20 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useLocalityPrefs } from "@/hooks/useLocalityPrefs";
+import { LocalitySwitcher } from "@/components/LocalitySwitcher";
+import { fetchLocalities, type Locality } from "@/lib/locality";
 
 export const Route = createFileRoute("/_authenticated/app")({
   beforeLoad: async () => {
