@@ -16,6 +16,7 @@ import {
   Check,
   Send,
   X,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -32,6 +33,20 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useLocalityPrefs } from "@/hooks/useLocalityPrefs";
+import { LocalitySwitcher } from "@/components/LocalitySwitcher";
+import { fetchLocalities, type Locality } from "@/lib/locality";
 
 export const Route = createFileRoute("/_authenticated/app")({
   beforeLoad: async () => {
@@ -101,6 +116,7 @@ function Dashboard() {
   const [tab, setTab] = useState<"home" | "chats" | "profile">("home");
   const [skills, setSkills] = useState<Skill[]>([]);
   const [openThread, setOpenThread] = useState<Thread | null>(null);
+  const prefs = useLocalityPrefs(user?.id);
 
   useEffect(() => {
     void supabase
@@ -119,30 +135,28 @@ function Dashboard() {
     <div className="min-h-screen bg-background pb-24">
       {/* Top bar */}
       <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 md:px-6">
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-3 py-3 md:px-6">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
               <Sparkles className="h-5 w-5" />
             </div>
-            <span className="hidden font-display text-base font-bold sm:block">
-              Floq
-            </span>
+            <LocalitySwitcher prefs={prefs} userId={user!.id} />
           </div>
 
-          {/* Role toggle */}
-          <RoleToggle
-            roles={roles}
-            active={activeRole}
-            onChange={setActiveRole}
-          />
-
-          <button
-            onClick={handleSignOut}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground transition hover:border-primary hover:text-primary"
-            aria-label="Sign out"
-          >
-            <LogOut className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            <RoleToggle
+              roles={roles}
+              active={activeRole}
+              onChange={setActiveRole}
+            />
+            <button
+              onClick={handleSignOut}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground transition hover:border-primary hover:text-primary"
+              aria-label="Sign out"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </header>
 
@@ -150,6 +164,9 @@ function Dashboard() {
         {tab === "home" && activeRole === "student" && (
           <StudentFeed
             userId={user!.id}
+            localityIds={prefs.effectiveIds}
+            selectedLocalities={prefs.selected}
+            prefsLoading={prefs.loading}
             onOpenThread={(t) => setOpenThread(t)}
           />
         )}
@@ -157,6 +174,7 @@ function Dashboard() {
           <ProviderHome
             userId={user!.id}
             skills={skills}
+            homeLocalityId={prefs.homeId}
             onOpenThread={(t) => setOpenThread(t)}
           />
         )}
@@ -305,26 +323,42 @@ function NavBtn({
 
 function StudentFeed({
   userId,
+  localityIds,
+  selectedLocalities,
+  prefsLoading,
   onOpenThread,
 }: {
   userId: string;
+  localityIds: string[];
+  selectedLocalities: Locality[];
+  prefsLoading: boolean;
   onOpenThread: (t: Thread) => void;
 }) {
   const [gigs, setGigs] = useState<Gig[]>([]);
-  const [applied, setApplied] = useState<Map<string, string>>(new Map()); // gigId -> threadId
+  const [applied, setApplied] = useState<Map<string, string>>(new Map());
   const [category, setCategory] = useState("All");
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
 
+  const localityKey = localityIds.join(",");
+  const localityNameById = useMemo(
+    () => new Map(selectedLocalities.map((l) => [l.id, l.name])),
+    [selectedLocalities],
+  );
+
   const load = async () => {
     setLoading(true);
-    const { data: g } = await supabase
+    let query = supabase
       .from("gigs")
       .select(
         "id, title, category, pay_text, duration, location, description, created_at, provider_id, locality_id",
       )
       .order("created_at", { ascending: false })
       .limit(100);
+    if (localityIds.length > 0) {
+      query = query.in("locality_id", localityIds);
+    }
+    const { data: g } = await query;
 
     const ids = (g ?? []).map((x) => x.id);
     const providerIds = Array.from(new Set((g ?? []).map((x) => x.provider_id)));
@@ -357,10 +391,10 @@ function StudentFeed({
       ...x,
       tags: tagMap.get(x.id) ?? [],
       provider_name: provMap.get(x.provider_id),
+      locality_name: x.locality_id ? localityNameById.get(x.locality_id) : undefined,
     }));
     setGigs(enriched);
 
-    // Applied gigs (with threads)
     const { data: apps } = await supabase
       .from("applications")
       .select("gig_id")
@@ -381,8 +415,10 @@ function StudentFeed({
   };
 
   useEffect(() => {
+    if (prefsLoading) return;
     void load();
-  }, [userId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, localityKey, prefsLoading]);
 
   const filtered = useMemo(() => {
     return gigs.filter((g) => {
@@ -450,6 +486,13 @@ function StudentFeed({
     });
   };
 
+  const localityLabel =
+    selectedLocalities.length === 0
+      ? "Pick your locality"
+      : selectedLocalities.length === 1
+        ? selectedLocalities[0].name
+        : `${selectedLocalities[0].name} +${selectedLocalities.length - 1}`;
+
   return (
     <div>
       <div className="mb-5">
@@ -457,7 +500,9 @@ function StudentFeed({
           Gigs near you
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Fresh local work in Kuravilangad.
+          Showing gigs for{" "}
+          <span className="font-medium text-foreground">{localityLabel}</span>.
+          Tap the locality in the header to add more.
         </p>
       </div>
 
@@ -487,13 +532,25 @@ function StudentFeed({
         ))}
       </div>
 
-      {loading ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">
-          Loading gigs…
-        </p>
+      {prefsLoading || loading ? (
+        <div className="space-y-3">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="h-36 animate-pulse rounded-3xl border border-border bg-surface"
+            />
+          ))}
+        </div>
+      ) : localityIds.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-border p-8 text-center">
+          <MapPin className="mx-auto mb-2 h-6 w-6 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">
+            Pick a locality from the header to see gigs near you.
+          </p>
+        </div>
       ) : filtered.length === 0 ? (
         <p className="py-8 text-center text-sm text-muted-foreground">
-          No gigs match your filters yet.
+          No gigs match your filters yet. Try adding more localities from the header.
         </p>
       ) : (
         <div className="space-y-3">
@@ -609,10 +666,12 @@ const gigSchema = z.object({
 function ProviderHome({
   userId,
   skills,
+  homeLocalityId,
   onOpenThread,
 }: {
   userId: string;
   skills: Skill[];
+  homeLocalityId: string | null;
   onOpenThread: (t: Thread) => void;
 }) {
   const [showForm, setShowForm] = useState(false);
@@ -675,6 +734,7 @@ function ProviderHome({
         <PostGigForm
           userId={userId}
           skills={skills}
+          defaultLocalityId={homeLocalityId}
           onCreated={() => {
             setShowForm(false);
             void load();
@@ -683,9 +743,14 @@ function ProviderHome({
       )}
 
       {loading ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">
-          Loading…
-        </p>
+        <div className="space-y-3">
+          {[0, 1].map((i) => (
+            <div
+              key={i}
+              className="h-32 animate-pulse rounded-3xl border border-border bg-surface"
+            />
+          ))}
+        </div>
       ) : myGigs.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-border p-8 text-center">
           <p className="text-sm text-muted-foreground">
@@ -700,6 +765,7 @@ function ProviderHome({
               gig={g}
               userId={userId}
               onOpenThread={onOpenThread}
+              onDeleted={() => void load()}
             />
           ))}
         </div>
@@ -711,23 +777,46 @@ function ProviderHome({
 function PostGigForm({
   userId,
   skills,
+  defaultLocalityId,
   onCreated,
 }: {
   userId: string;
   skills: Skill[];
+  defaultLocalityId: string | null;
   onCreated: () => void;
 }) {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("Tuition");
   const [pay, setPay] = useState("");
   const [duration, setDuration] = useState("");
-  const [location, setLocation] = useState("Kuravilangad");
+  const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
+  const [localities, setLocalities] = useState<Locality[]>([]);
+  const [localityId, setLocalityId] = useState<string>("");
+
+  useEffect(() => {
+    void fetchLocalities().then((all) => {
+      const active = all.filter((l) => l.status === "active");
+      setLocalities(active);
+      const initial =
+        defaultLocalityId && active.some((l) => l.id === defaultLocalityId)
+          ? defaultLocalityId
+          : active[0]?.id ?? "";
+      setLocalityId(initial);
+      const init = active.find((l) => l.id === initial);
+      if (init && !location) setLocation(init.name);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultLocalityId]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!localityId) {
+      toast.error("Pick a locality for this gig");
+      return;
+    }
     const parsed = gigSchema.safeParse({
       title,
       category,
@@ -744,7 +833,7 @@ function PostGigForm({
     try {
       const { data: gig, error } = await supabase
         .from("gigs")
-        .insert({ ...parsed.data, provider_id: userId })
+        .insert({ ...parsed.data, provider_id: userId, locality_id: localityId })
         .select("id")
         .single();
       if (error) throw error;
@@ -818,7 +907,27 @@ function PostGigForm({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="loc">Location / landmark</Label>
+          <Label htmlFor="locality">Locality</Label>
+          <select
+            id="locality"
+            value={localityId}
+            onChange={(e) => {
+              setLocalityId(e.target.value);
+              const l = localities.find((x) => x.id === e.target.value);
+              if (l) setLocation(l.name);
+            }}
+            className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm"
+          >
+            {localities.length === 0 && <option value="">No active localities</option>}
+            {localities.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="loc">Landmark / area</Label>
           <Input
             id="loc"
             value={location}
@@ -884,11 +993,25 @@ function ProviderGigCard({
   gig,
   userId,
   onOpenThread,
+  onDeleted,
 }: {
   gig: Gig;
   userId: string;
   onOpenThread: (t: Thread) => void;
+  onDeleted: () => void;
 }) {
+  const [deleting, setDeleting] = useState(false);
+  const handleDelete = async () => {
+    setDeleting(true);
+    const { error } = await supabase.from("gigs").delete().eq("id", gig.id);
+    setDeleting(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Gig deleted");
+    onDeleted();
+  };
   const [matches, setMatches] = useState<
     Array<Profile & { overlap: number }>
   >([]);
@@ -1025,7 +1148,7 @@ function ProviderGigCard({
     <article className="overflow-hidden rounded-3xl border border-border bg-surface shadow-soft">
       <div className="p-5">
         <div className="flex items-start justify-between gap-3">
-          <div>
+          <div className="min-w-0 flex-1">
             <span className="rounded-full bg-primary-soft px-3 py-0.5 text-xs font-medium text-primary">
               {gig.category}
             </span>
@@ -1037,6 +1160,38 @@ function ProviderGigCard({
               {gig.location} · {gig.pay_text}
             </p>
           </div>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button
+                aria-label="Delete gig"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground transition hover:border-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete this gig?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  "{gig.title}" will be removed. Existing chats stay, but no new
+                  students can apply.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  disabled={deleting}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    void handleDelete();
+                  }}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  {deleting ? "Deleting…" : "Delete"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 
