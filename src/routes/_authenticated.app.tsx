@@ -1148,7 +1148,7 @@ function ProviderGigCard({
     <article className="overflow-hidden rounded-3xl border border-border bg-surface shadow-soft">
       <div className="p-5">
         <div className="flex items-start justify-between gap-3">
-          <div>
+          <div className="min-w-0 flex-1">
             <span className="rounded-full bg-primary-soft px-3 py-0.5 text-xs font-medium text-primary">
               {gig.category}
             </span>
@@ -1160,6 +1160,38 @@ function ProviderGigCard({
               {gig.location} · {gig.pay_text}
             </p>
           </div>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button
+                aria-label="Delete gig"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground transition hover:border-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete this gig?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  "{gig.title}" will be removed. Existing chats stay, but no new
+                  students can apply.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  disabled={deleting}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    void handleDelete();
+                  }}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  {deleting ? "Deleting…" : "Delete"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 
