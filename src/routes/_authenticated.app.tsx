@@ -323,26 +323,42 @@ function NavBtn({
 
 function StudentFeed({
   userId,
+  localityIds,
+  selectedLocalities,
+  prefsLoading,
   onOpenThread,
 }: {
   userId: string;
+  localityIds: string[];
+  selectedLocalities: Locality[];
+  prefsLoading: boolean;
   onOpenThread: (t: Thread) => void;
 }) {
   const [gigs, setGigs] = useState<Gig[]>([]);
-  const [applied, setApplied] = useState<Map<string, string>>(new Map()); // gigId -> threadId
+  const [applied, setApplied] = useState<Map<string, string>>(new Map());
   const [category, setCategory] = useState("All");
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
 
+  const localityKey = localityIds.join(",");
+  const localityNameById = useMemo(
+    () => new Map(selectedLocalities.map((l) => [l.id, l.name])),
+    [selectedLocalities],
+  );
+
   const load = async () => {
     setLoading(true);
-    const { data: g } = await supabase
+    let query = supabase
       .from("gigs")
       .select(
         "id, title, category, pay_text, duration, location, description, created_at, provider_id, locality_id",
       )
       .order("created_at", { ascending: false })
       .limit(100);
+    if (localityIds.length > 0) {
+      query = query.in("locality_id", localityIds);
+    }
+    const { data: g } = await query;
 
     const ids = (g ?? []).map((x) => x.id);
     const providerIds = Array.from(new Set((g ?? []).map((x) => x.provider_id)));
@@ -375,10 +391,10 @@ function StudentFeed({
       ...x,
       tags: tagMap.get(x.id) ?? [],
       provider_name: provMap.get(x.provider_id),
+      locality_name: x.locality_id ? localityNameById.get(x.locality_id) : undefined,
     }));
     setGigs(enriched);
 
-    // Applied gigs (with threads)
     const { data: apps } = await supabase
       .from("applications")
       .select("gig_id")
@@ -399,8 +415,10 @@ function StudentFeed({
   };
 
   useEffect(() => {
+    if (prefsLoading) return;
     void load();
-  }, [userId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, localityKey, prefsLoading]);
 
   const filtered = useMemo(() => {
     return gigs.filter((g) => {
