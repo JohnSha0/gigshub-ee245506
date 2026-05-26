@@ -81,22 +81,27 @@ export function useLocalityPrefs(userId: string | null | undefined): LocalityPre
       if (!userId) return;
       const nearby = await fetchNearby(lat, lng, DEFAULT_NEARBY_RADIUS_KM).catch(() => []);
       const matchedIds = nearby.map((n) => n.id);
-      const updates: Record<string, unknown> = { lat, lng };
-      // If user has no home yet, auto-assign closest active one.
       let nextHome = homeId;
+      let newHomeId: string | null = null;
       if (!homeId && nearby.length > 0) {
         const active = nearby.find((n) => n.is_active) ?? nearby[0];
         nextHome = active.id;
-        updates.home_locality_id = active.id;
+        newHomeId = active.id;
         setHomeId(active.id);
       }
-      // Merge nearby into extras (minus home).
       const merged = Array.from(new Set([...extraIds, ...matchedIds])).filter(
         (id) => id !== nextHome,
       );
-      updates.extra_locality_ids = merged;
       setExtraIds(merged);
-      await supabase.from("profiles").update(updates).eq("id", userId);
+      await supabase
+        .from("profiles")
+        .update({
+          lat,
+          lng,
+          extra_locality_ids: merged,
+          ...(newHomeId ? { home_locality_id: newHomeId } : {}),
+        })
+        .eq("id", userId);
     },
     [userId, homeId, extraIds],
   );
