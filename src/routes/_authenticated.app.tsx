@@ -907,7 +907,27 @@ function PostGigForm({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="loc">Location / landmark</Label>
+          <Label htmlFor="locality">Locality</Label>
+          <select
+            id="locality"
+            value={localityId}
+            onChange={(e) => {
+              setLocalityId(e.target.value);
+              const l = localities.find((x) => x.id === e.target.value);
+              if (l) setLocation(l.name);
+            }}
+            className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm"
+          >
+            {localities.length === 0 && <option value="">No active localities</option>}
+            {localities.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="loc">Landmark / area</Label>
           <Input
             id="loc"
             value={location}
