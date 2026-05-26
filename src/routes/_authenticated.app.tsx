@@ -116,6 +116,7 @@ function Dashboard() {
   const [tab, setTab] = useState<"home" | "chats" | "profile">("home");
   const [skills, setSkills] = useState<Skill[]>([]);
   const [openThread, setOpenThread] = useState<Thread | null>(null);
+  const prefs = useLocalityPrefs(user?.id);
 
   useEffect(() => {
     void supabase
@@ -134,30 +135,28 @@ function Dashboard() {
     <div className="min-h-screen bg-background pb-24">
       {/* Top bar */}
       <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 md:px-6">
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-3 py-3 md:px-6">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
               <Sparkles className="h-5 w-5" />
             </div>
-            <span className="hidden font-display text-base font-bold sm:block">
-              Floq
-            </span>
+            <LocalitySwitcher prefs={prefs} userId={user!.id} />
           </div>
 
-          {/* Role toggle */}
-          <RoleToggle
-            roles={roles}
-            active={activeRole}
-            onChange={setActiveRole}
-          />
-
-          <button
-            onClick={handleSignOut}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground transition hover:border-primary hover:text-primary"
-            aria-label="Sign out"
-          >
-            <LogOut className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            <RoleToggle
+              roles={roles}
+              active={activeRole}
+              onChange={setActiveRole}
+            />
+            <button
+              onClick={handleSignOut}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground transition hover:border-primary hover:text-primary"
+              aria-label="Sign out"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </header>
 
@@ -165,6 +164,9 @@ function Dashboard() {
         {tab === "home" && activeRole === "student" && (
           <StudentFeed
             userId={user!.id}
+            localityIds={prefs.effectiveIds}
+            selectedLocalities={prefs.selected}
+            prefsLoading={prefs.loading}
             onOpenThread={(t) => setOpenThread(t)}
           />
         )}
@@ -172,6 +174,7 @@ function Dashboard() {
           <ProviderHome
             userId={user!.id}
             skills={skills}
+            homeLocalityId={prefs.homeId}
             onOpenThread={(t) => setOpenThread(t)}
           />
         )}
