@@ -486,6 +486,13 @@ function StudentFeed({
     });
   };
 
+  const localityLabel =
+    selectedLocalities.length === 0
+      ? "Pick your locality"
+      : selectedLocalities.length === 1
+        ? selectedLocalities[0].name
+        : `${selectedLocalities[0].name} +${selectedLocalities.length - 1}`;
+
   return (
     <div>
       <div className="mb-5">
@@ -493,7 +500,9 @@ function StudentFeed({
           Gigs near you
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Fresh local work in Kuravilangad.
+          Showing gigs for{" "}
+          <span className="font-medium text-foreground">{localityLabel}</span>.
+          Tap the locality in the header to add more.
         </p>
       </div>
 
@@ -523,13 +532,25 @@ function StudentFeed({
         ))}
       </div>
 
-      {loading ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">
-          Loading gigs…
-        </p>
+      {prefsLoading || loading ? (
+        <div className="space-y-3">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="h-36 animate-pulse rounded-3xl border border-border bg-surface"
+            />
+          ))}
+        </div>
+      ) : localityIds.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-border p-8 text-center">
+          <MapPin className="mx-auto mb-2 h-6 w-6 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">
+            Pick a locality from the header to see gigs near you.
+          </p>
+        </div>
       ) : filtered.length === 0 ? (
         <p className="py-8 text-center text-sm text-muted-foreground">
-          No gigs match your filters yet.
+          No gigs match your filters yet. Try adding more localities from the header.
         </p>
       ) : (
         <div className="space-y-3">
