@@ -666,10 +666,12 @@ const gigSchema = z.object({
 function ProviderHome({
   userId,
   skills,
+  homeLocalityId,
   onOpenThread,
 }: {
   userId: string;
   skills: Skill[];
+  homeLocalityId: string | null;
   onOpenThread: (t: Thread) => void;
 }) {
   const [showForm, setShowForm] = useState(false);
@@ -732,6 +734,7 @@ function ProviderHome({
         <PostGigForm
           userId={userId}
           skills={skills}
+          defaultLocalityId={homeLocalityId}
           onCreated={() => {
             setShowForm(false);
             void load();
@@ -740,9 +743,14 @@ function ProviderHome({
       )}
 
       {loading ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">
-          Loading…
-        </p>
+        <div className="space-y-3">
+          {[0, 1].map((i) => (
+            <div
+              key={i}
+              className="h-32 animate-pulse rounded-3xl border border-border bg-surface"
+            />
+          ))}
+        </div>
       ) : myGigs.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-border p-8 text-center">
           <p className="text-sm text-muted-foreground">
@@ -757,6 +765,7 @@ function ProviderHome({
               gig={g}
               userId={userId}
               onOpenThread={onOpenThread}
+              onDeleted={() => void load()}
             />
           ))}
         </div>
