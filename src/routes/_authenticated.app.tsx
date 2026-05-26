@@ -993,11 +993,25 @@ function ProviderGigCard({
   gig,
   userId,
   onOpenThread,
+  onDeleted,
 }: {
   gig: Gig;
   userId: string;
   onOpenThread: (t: Thread) => void;
+  onDeleted: () => void;
 }) {
+  const [deleting, setDeleting] = useState(false);
+  const handleDelete = async () => {
+    setDeleting(true);
+    const { error } = await supabase.from("gigs").delete().eq("id", gig.id);
+    setDeleting(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Gig deleted");
+    onDeleted();
+  };
   const [matches, setMatches] = useState<
     Array<Profile & { overlap: number }>
   >([]);
