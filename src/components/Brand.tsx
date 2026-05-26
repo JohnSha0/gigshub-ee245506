@@ -1,6 +1,6 @@
 import { Sparkles } from "lucide-react";
 
-export const BRAND_NAME = "Gigs Hub";
+export const BRAND_NAME = "Floq";
 export const BRAND_TAGLINE = "Quick gigs near you";
 
 export function BrandMark({
