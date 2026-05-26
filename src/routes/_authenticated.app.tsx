@@ -777,23 +777,46 @@ function ProviderHome({
 function PostGigForm({
   userId,
   skills,
+  defaultLocalityId,
   onCreated,
 }: {
   userId: string;
   skills: Skill[];
+  defaultLocalityId: string | null;
   onCreated: () => void;
 }) {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("Tuition");
   const [pay, setPay] = useState("");
   const [duration, setDuration] = useState("");
-  const [location, setLocation] = useState("Kuravilangad");
+  const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
+  const [localities, setLocalities] = useState<Locality[]>([]);
+  const [localityId, setLocalityId] = useState<string>("");
+
+  useEffect(() => {
+    void fetchLocalities().then((all) => {
+      const active = all.filter((l) => l.status === "active");
+      setLocalities(active);
+      const initial =
+        defaultLocalityId && active.some((l) => l.id === defaultLocalityId)
+          ? defaultLocalityId
+          : active[0]?.id ?? "";
+      setLocalityId(initial);
+      const init = active.find((l) => l.id === initial);
+      if (init && !location) setLocation(init.name);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultLocalityId]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!localityId) {
+      toast.error("Pick a locality for this gig");
+      return;
+    }
     const parsed = gigSchema.safeParse({
       title,
       category,
@@ -810,7 +833,7 @@ function PostGigForm({
     try {
       const { data: gig, error } = await supabase
         .from("gigs")
-        .insert({ ...parsed.data, provider_id: userId })
+        .insert({ ...parsed.data, provider_id: userId, locality_id: localityId })
         .select("id")
         .single();
       if (error) throw error;
