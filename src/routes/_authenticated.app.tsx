@@ -567,10 +567,36 @@ function StudentFeed({
           </p>
         </div>
       ) : filtered.length === 0 ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">
-          No gigs match your filters yet. Try adding more localities from the header.
-        </p>
-      ) : (
+        <div className="rounded-3xl border border-dashed border-border p-8 text-center">
+          <Search className="mx-auto mb-2 h-6 w-6 text-muted-foreground" />
+          {gigs.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No gigs in your localities yet. Add more from the header — new
+              gigs show up here in real time.
+            </p>
+          ) : q || category !== "All" ? (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                No gigs match {q ? `"${q}"` : `the ${category} filter`} right now.
+              </p>
+              <Button
+                size="sm"
+                variant="secondary"
+                className="rounded-full"
+                onClick={() => {
+                  setQ("");
+                  setCategory("All");
+                }}
+              >
+                Clear filters
+              </Button>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              No gigs match your filters yet.
+            </p>
+          )}
+        </div>
         <div className="space-y-3">
           {filtered.map((g) => (
             <GigCard
