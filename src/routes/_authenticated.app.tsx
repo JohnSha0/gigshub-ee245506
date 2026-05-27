@@ -1042,24 +1042,26 @@ function ProviderGigCard({
   gig,
   userId,
   onOpenThread,
-  onDeleted,
+  onOptimisticDelete,
 }: {
   gig: Gig;
   userId: string;
   onOpenThread: (t: Thread) => void;
-  onDeleted: () => void;
+  /** Removes gig from feed immediately; returns rollback fn. */
+  onOptimisticDelete: () => () => void;
 }) {
   const [deleting, setDeleting] = useState(false);
   const handleDelete = async () => {
     setDeleting(true);
+    const rollback = onOptimisticDelete();
     const { error } = await supabase.from("gigs").delete().eq("id", gig.id);
     setDeleting(false);
     if (error) {
+      rollback();
       toast.error(error.message);
       return;
     }
     toast.success("Gig deleted");
-    onDeleted();
   };
   const [matches, setMatches] = useState<
     Array<Profile & { overlap: number }>
