@@ -810,7 +810,11 @@ function ProviderHome({
               gig={g}
               userId={userId}
               onOpenThread={onOpenThread}
-              onDeleted={() => void load()}
+              onOptimisticDelete={() => {
+                const snapshot = myGigs;
+                setMyGigs((prev) => prev.filter((x) => x.id !== g.id));
+                return () => setMyGigs(snapshot); // rollback
+              }}
             />
           ))}
         </div>
