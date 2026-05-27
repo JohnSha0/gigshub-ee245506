@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
-import { Sparkles } from "lucide-react";
+import { BrandMark } from "@/components/Brand";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -108,12 +108,7 @@ function StudentOnboarding() {
   return (
     <div className="min-h-screen bg-background">
       <header className="mx-auto flex max-w-2xl items-center justify-between px-6 py-5">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <Sparkles className="h-4 w-4" />
-          </div>
-          <span className="font-display text-sm font-bold">Floq</span>
-        </div>
+        <BrandMark size="sm" />
       </header>
 
       <main className="mx-auto max-w-2xl px-6 pb-24 pt-4">

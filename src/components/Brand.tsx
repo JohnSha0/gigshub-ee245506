@@ -1,7 +1,8 @@
-import { Sparkles } from "lucide-react";
+import logoUrl from "@/assets/floq-logo.png";
 
 export const BRAND_NAME = "Floq";
 export const BRAND_TAGLINE = "Quick gigs near you";
+export const BRAND_LOGO_URL = logoUrl;
 
 export function BrandMark({
   showName = true,
@@ -10,15 +11,18 @@ export function BrandMark({
   showName?: boolean;
   size?: "sm" | "md" | "lg";
 }) {
-  const dim = size === "sm" ? "h-8 w-8" : size === "lg" ? "h-10 w-10" : "h-9 w-9";
-  const icon = size === "sm" ? "h-4 w-4" : "h-5 w-5";
+  const dim = size === "sm" ? "h-7 w-7" : size === "lg" ? "h-10 w-10" : "h-8 w-8";
   return (
     <div className="flex items-center gap-2">
-      <div className={`flex ${dim} items-center justify-center rounded-2xl bg-primary text-primary-foreground`}>
-        <Sparkles className={icon} />
-      </div>
+      <img
+        src={logoUrl}
+        alt="Floq logo"
+        className={`${dim} object-contain`}
+        loading="eager"
+        decoding="async"
+      />
       {showName && (
-        <span className="font-display text-base font-bold tracking-tight">
+        <span className="font-display text-base font-bold tracking-tight bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
           {BRAND_NAME}
         </span>
       )}
