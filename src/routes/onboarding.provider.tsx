@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
-import { Sparkles } from "lucide-react";
+import { BrandMark } from "@/components/Brand";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";

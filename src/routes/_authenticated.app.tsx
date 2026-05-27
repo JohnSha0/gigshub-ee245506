@@ -5,7 +5,6 @@ import {
   useNavigate,
 } from "@tanstack/react-router";
 import {
-  Sparkles,
   Search,
   LogOut,
   Plus,
@@ -18,6 +17,7 @@ import {
   X,
   Trash2,
 } from "lucide-react";
+import { BRAND_LOGO_URL } from "@/components/Brand";
 import { toast } from "sonner";
 import { z } from "zod";
 
