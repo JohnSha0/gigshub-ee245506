@@ -323,12 +323,14 @@ function NavBtn({
 function StudentFeed({
   userId,
   localityIds,
+  homeLocalityId,
   selectedLocalities,
   prefsLoading,
   onOpenThread,
 }: {
   userId: string;
   localityIds: string[];
+  homeLocalityId: string | null;
   selectedLocalities: Locality[];
   prefsLoading: boolean;
   onOpenThread: (t: Thread) => void;
@@ -344,6 +346,16 @@ function StudentFeed({
     () => new Map(selectedLocalities.map((l) => [l.id, l.name])),
     [selectedLocalities],
   );
+  // Proximity rank: home locality = 0, extras follow in their selected order, others last.
+  const localityRank = useMemo(() => {
+    const order = [
+      homeLocalityId,
+      ...localityIds.filter((id) => id !== homeLocalityId),
+    ].filter(Boolean) as string[];
+    const m = new Map<string, number>();
+    order.forEach((id, i) => m.set(id, i));
+    return m;
+  }, [homeLocalityId, localityIds]);
 
   const load = async () => {
     setLoading(true);
