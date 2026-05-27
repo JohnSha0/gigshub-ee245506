@@ -597,6 +597,7 @@ function StudentFeed({
             </p>
           )}
         </div>
+      ) : (
         <div className="space-y-3">
           {filtered.map((g) => (
             <GigCard
