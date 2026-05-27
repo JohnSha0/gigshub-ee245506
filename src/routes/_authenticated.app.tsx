@@ -404,6 +404,13 @@ function StudentFeed({
       provider_name: provMap.get(x.provider_id),
       locality_name: x.locality_id ? localityNameById.get(x.locality_id) : undefined,
     }));
+    // Rank: closer localities first (home → extras), then newest.
+    enriched.sort((a, b) => {
+      const ra = a.locality_id ? localityRank.get(a.locality_id) ?? 999 : 999;
+      const rb = b.locality_id ? localityRank.get(b.locality_id) ?? 999 : 999;
+      if (ra !== rb) return ra - rb;
+      return b.created_at.localeCompare(a.created_at);
+    });
     setGigs(enriched);
 
     const { data: apps } = await supabase
