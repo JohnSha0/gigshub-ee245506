@@ -163,6 +163,7 @@ function Dashboard() {
           <StudentFeed
             userId={user!.id}
             localityIds={prefs.effectiveIds}
+            homeLocalityId={prefs.homeId}
             selectedLocalities={prefs.selected}
             prefsLoading={prefs.loading}
             onOpenThread={(t) => setOpenThread(t)}
@@ -322,12 +323,14 @@ function NavBtn({
 function StudentFeed({
   userId,
   localityIds,
+  homeLocalityId,
   selectedLocalities,
   prefsLoading,
   onOpenThread,
 }: {
   userId: string;
   localityIds: string[];
+  homeLocalityId: string | null;
   selectedLocalities: Locality[];
   prefsLoading: boolean;
   onOpenThread: (t: Thread) => void;
@@ -343,6 +346,16 @@ function StudentFeed({
     () => new Map(selectedLocalities.map((l) => [l.id, l.name])),
     [selectedLocalities],
   );
+  // Proximity rank: home locality = 0, extras follow in their selected order, others last.
+  const localityRank = useMemo(() => {
+    const order = [
+      homeLocalityId,
+      ...localityIds.filter((id) => id !== homeLocalityId),
+    ].filter(Boolean) as string[];
+    const m = new Map<string, number>();
+    order.forEach((id, i) => m.set(id, i));
+    return m;
+  }, [homeLocalityId, localityIds]);
 
   const load = async () => {
     setLoading(true);
@@ -391,6 +404,13 @@ function StudentFeed({
       provider_name: provMap.get(x.provider_id),
       locality_name: x.locality_id ? localityNameById.get(x.locality_id) : undefined,
     }));
+    // Rank: closer localities first (home → extras), then newest.
+    enriched.sort((a, b) => {
+      const ra = a.locality_id ? localityRank.get(a.locality_id) ?? 999 : 999;
+      const rb = b.locality_id ? localityRank.get(b.locality_id) ?? 999 : 999;
+      if (ra !== rb) return ra - rb;
+      return b.created_at.localeCompare(a.created_at);
+    });
     setGigs(enriched);
 
     const { data: apps } = await supabase
@@ -547,9 +567,36 @@ function StudentFeed({
           </p>
         </div>
       ) : filtered.length === 0 ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">
-          No gigs match your filters yet. Try adding more localities from the header.
-        </p>
+        <div className="rounded-3xl border border-dashed border-border p-8 text-center">
+          <Search className="mx-auto mb-2 h-6 w-6 text-muted-foreground" />
+          {gigs.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No gigs in your localities yet. Add more from the header — new
+              gigs show up here in real time.
+            </p>
+          ) : q || category !== "All" ? (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                No gigs match {q ? `"${q}"` : `the ${category} filter`} right now.
+              </p>
+              <Button
+                size="sm"
+                variant="secondary"
+                className="rounded-full"
+                onClick={() => {
+                  setQ("");
+                  setCategory("All");
+                }}
+              >
+                Clear filters
+              </Button>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              No gigs match your filters yet.
+            </p>
+          )}
+        </div>
       ) : (
         <div className="space-y-3">
           {filtered.map((g) => (
@@ -763,7 +810,11 @@ function ProviderHome({
               gig={g}
               userId={userId}
               onOpenThread={onOpenThread}
-              onDeleted={() => void load()}
+              onOptimisticDelete={() => {
+                const snapshot = myGigs;
+                setMyGigs((prev) => prev.filter((x) => x.id !== g.id));
+                return () => setMyGigs(snapshot); // rollback
+              }}
             />
           ))}
         </div>
@@ -991,24 +1042,26 @@ function ProviderGigCard({
   gig,
   userId,
   onOpenThread,
-  onDeleted,
+  onOptimisticDelete,
 }: {
   gig: Gig;
   userId: string;
   onOpenThread: (t: Thread) => void;
-  onDeleted: () => void;
+  /** Removes gig from feed immediately; returns rollback fn. */
+  onOptimisticDelete: () => () => void;
 }) {
   const [deleting, setDeleting] = useState(false);
   const handleDelete = async () => {
     setDeleting(true);
+    const rollback = onOptimisticDelete();
     const { error } = await supabase.from("gigs").delete().eq("id", gig.id);
     setDeleting(false);
     if (error) {
+      rollback();
       toast.error(error.message);
       return;
     }
     toast.success("Gig deleted");
-    onDeleted();
   };
   const [matches, setMatches] = useState<
     Array<Profile & { overlap: number }>
