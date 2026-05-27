@@ -163,6 +163,7 @@ function Dashboard() {
           <StudentFeed
             userId={user!.id}
             localityIds={prefs.effectiveIds}
+            homeLocalityId={prefs.homeId}
             selectedLocalities={prefs.selected}
             prefsLoading={prefs.loading}
             onOpenThread={(t) => setOpenThread(t)}
