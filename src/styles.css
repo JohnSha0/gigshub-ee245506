@@ -48,7 +48,7 @@
 :root {
   --radius: 1rem;
 
-  /* Floq — cyan/blue tech-community aesthetic */
+  /* Fledg — cyan/blue tech-community aesthetic */
   --background: oklch(0.99 0.005 220);
   --foreground: oklch(0.2 0.04 240);
 

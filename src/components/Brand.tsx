@@ -1,6 +1,6 @@
 import logoUrl from "@/assets/floq-logo.png";
 
-export const BRAND_NAME = "Floq";
+export const BRAND_NAME = "Fledg";
 export const BRAND_TAGLINE = "Quick gigs near you";
 export const BRAND_LOGO_URL = logoUrl;
 
@@ -16,7 +16,7 @@ export function BrandMark({
     <div className="flex items-center gap-2">
       <img
         src={logoUrl}
-        alt="Floq logo"
+        alt={`${BRAND_NAME} logo`}
         className={`${dim} object-contain`}
         loading="eager"
         decoding="async"
@@ -27,5 +27,40 @@ export function BrandMark({
         </span>
       )}
     </div>
+  );
+}
+
+/**
+ * Minimal line-art monogram derived from the Fledg logo.
+ * Use in footers, compact nav, and lightweight branding placements
+ * where the full raster logo would feel heavy.
+ */
+export function BrandGlyph({
+  className = "",
+  size = 20,
+}: {
+  className?: string;
+  size?: number;
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-label={`${BRAND_NAME} mark`}
+      role="img"
+    >
+      {/* Stylised F + spark — feather-light monogram */}
+      <path d="M6 4h11" />
+      <path d="M6 4v16" />
+      <path d="M6 12h8" />
+      <circle cx="18.5" cy="18.5" r="2" />
+    </svg>
   );
 }

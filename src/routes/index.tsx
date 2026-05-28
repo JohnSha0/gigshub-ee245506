@@ -1,7 +1,7 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
-import { MapPin, Users, Briefcase, Sparkles, ArrowRight } from "lucide-react";
+import { MapPin, Users, Briefcase, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { BRAND_NAME, BRAND_TAGLINE, BrandMark } from "@/components/Brand";
+import { BRAND_NAME, BRAND_TAGLINE, BrandMark, BrandGlyph } from "@/components/Brand";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -10,7 +10,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Floq is a hyper-local marketplace for quick gigs near you. Find tutoring, design, photography, event help, errands and more — in your town.",
+          "Fledg is a hyper-local marketplace for quick gigs near you. Find tutoring, design, photography, event help, errands and more — in your town.",
       },
     ],
   }),
@@ -109,7 +109,7 @@ function Landing() {
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5" /> {BRAND_NAME}
+            <BrandGlyph size={14} className="text-primary" /> {BRAND_NAME}
           </span>
           <span>{BRAND_TAGLINE}</span>
         </div>
