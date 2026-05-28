@@ -10,7 +10,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Floq is a hyper-local marketplace for quick gigs near you. Find tutoring, design, photography, event help, errands and more — in your town.",
+          "Fledg is a hyper-local marketplace for quick gigs near you. Find tutoring, design, photography, event help, errands and more — in your town.",
       },
     ],
   }),
