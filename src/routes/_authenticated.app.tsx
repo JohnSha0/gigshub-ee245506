@@ -196,6 +196,8 @@ function Dashboard() {
         {tab === "profile" && (
           <ProfileTab
             userId={user!.id}
+            user={user!}
+            hasLocality={!!prefs.homeId}
             skills={skills}
             roles={roles}
             activeRole={activeRole}
