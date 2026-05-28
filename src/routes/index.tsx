@@ -1,7 +1,7 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
-import { MapPin, Users, Briefcase, Sparkles, ArrowRight } from "lucide-react";
+import { MapPin, Users, Briefcase, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { BRAND_NAME, BRAND_TAGLINE, BrandMark } from "@/components/Brand";
+import { BRAND_NAME, BRAND_TAGLINE, BrandMark, BrandGlyph } from "@/components/Brand";
 
 export const Route = createFileRoute("/")({
   head: () => ({
