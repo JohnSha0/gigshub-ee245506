@@ -1298,36 +1298,52 @@ function ProviderGigCard({
                   className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface p-3"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-semibold">{s.display_name}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="truncate font-semibold">{s.display_name}</p>
+                      <span
+                        className="inline-flex items-center gap-0.5 rounded-full bg-primary-soft px-1.5 py-0.5 text-[10px] font-medium text-primary"
+                        title={`${s.overlap} matching skill${s.overlap === 1 ? "" : "s"}`}
+                      >
+                        {s.overlap}× match
+                      </span>
+                    </div>
                     <p className="mt-0.5 truncate text-xs text-muted-foreground">
                       {s.skills.join(" · ")}
                     </p>
                   </div>
-                  {tid ? (
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      className="h-9 shrink-0 rounded-full text-xs"
-                      onClick={() =>
-                        onOpenThread({
-                          id: tid,
-                          gig_id: gig.id,
-                          student_id: s.id,
-                          provider_id: userId,
-                        })
-                      }
-                    >
-                      <Check className="mr-1 h-3 w-3" /> Sent · Open chat
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      className="h-9 shrink-0 rounded-full text-xs"
-                      onClick={() => connect(s)}
-                    >
-                      Connect
-                    </Button>
-                  )}
+                  <div className="flex shrink-0 items-center gap-1">
+                    <ReportDialog
+                      targetType="user"
+                      targetId={s.id}
+                      reporterId={userId}
+                      targetLabel={s.display_name}
+                    />
+                    {tid ? (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="h-9 rounded-full text-xs"
+                        onClick={() =>
+                          onOpenThread({
+                            id: tid,
+                            gig_id: gig.id,
+                            student_id: s.id,
+                            provider_id: userId,
+                          })
+                        }
+                      >
+                        <Check className="mr-1 h-3 w-3" /> Sent · Open chat
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        className="h-9 rounded-full text-xs"
+                        onClick={() => connect(s)}
+                      >
+                        Connect
+                      </Button>
+                    )}
+                  </div>
                 </div>
               );
             })}
