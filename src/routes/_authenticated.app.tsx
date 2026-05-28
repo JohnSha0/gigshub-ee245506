@@ -616,6 +616,7 @@ function StudentFeed({
             <GigCard
               key={g.id}
               gig={g}
+              viewerId={userId}
               appliedThreadId={applied.get(g.id) ?? null}
               onApply={() => apply(g)}
               onOpen={() => {
