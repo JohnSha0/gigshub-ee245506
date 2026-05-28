@@ -142,6 +142,16 @@ function Dashboard() {
           <div className="flex items-center gap-2 min-w-0">
             <img src={BRAND_LOGO_URL} alt="Fledg" className="h-9 w-9 shrink-0 object-contain" />
             <LocalitySwitcher prefs={prefs} userId={user!.id} />
+            <TrustBadges
+              iconOnly
+              size="xs"
+              signals={deriveTrustSignals({
+                emailConfirmedAt: user?.email_confirmed_at,
+                phoneConfirmedAt: user?.phone_confirmed_at,
+                hasLocality: !!prefs.homeId,
+              })}
+              className="hidden sm:flex"
+            />
           </div>
 
           <div className="flex items-center gap-2">
