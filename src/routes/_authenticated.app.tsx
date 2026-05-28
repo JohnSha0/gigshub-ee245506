@@ -47,6 +47,9 @@ import {
 import { useLocalityPrefs } from "@/hooks/useLocalityPrefs";
 import { LocalitySwitcher } from "@/components/LocalitySwitcher";
 import { fetchLocalities, type Locality } from "@/lib/locality";
+import { TrustBadges, deriveTrustSignals, profileCompleteness, type TrustSignal } from "@/components/TrustBadges";
+import { ReportDialog } from "@/components/ReportDialog";
+import { Progress } from "@/components/ui/progress";
 
 export const Route = createFileRoute("/_authenticated/app")({
   beforeLoad: async () => {
@@ -139,6 +142,16 @@ function Dashboard() {
           <div className="flex items-center gap-2 min-w-0">
             <img src={BRAND_LOGO_URL} alt="Fledg" className="h-9 w-9 shrink-0 object-contain" />
             <LocalitySwitcher prefs={prefs} userId={user!.id} />
+            <TrustBadges
+              iconOnly
+              size="xs"
+              signals={deriveTrustSignals({
+                emailConfirmedAt: user?.email_confirmed_at,
+                phoneConfirmedAt: user?.phone_confirmed_at,
+                hasLocality: !!prefs.homeId,
+              })}
+              className="hidden sm:flex"
+            />
           </div>
 
           <div className="flex items-center gap-2">
@@ -183,6 +196,8 @@ function Dashboard() {
         {tab === "profile" && (
           <ProfileTab
             userId={user!.id}
+            user={user!}
+            hasLocality={!!prefs.homeId}
             skills={skills}
             roles={roles}
             activeRole={activeRole}
@@ -603,6 +618,7 @@ function StudentFeed({
             <GigCard
               key={g.id}
               gig={g}
+              viewerId={userId}
               appliedThreadId={applied.get(g.id) ?? null}
               onApply={() => apply(g)}
               onOpen={() => {
@@ -625,23 +641,33 @@ function StudentFeed({
 
 function GigCard({
   gig,
+  viewerId,
   appliedThreadId,
   onApply,
   onOpen,
 }: {
   gig: Gig;
+  viewerId: string;
   appliedThreadId: string | null;
   onApply: () => void;
   onOpen: () => void;
 }) {
   const isApplied = !!appliedThreadId;
+  const canReport = viewerId !== gig.provider_id;
   return (
     <article className="rounded-3xl border border-border bg-surface p-5 shadow-soft">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1">
-          <span className="rounded-full bg-primary-soft px-3 py-0.5 text-xs font-medium text-primary">
-            {gig.category}
-          </span>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="rounded-full bg-primary-soft px-3 py-0.5 text-xs font-medium text-primary">
+              {gig.category}
+            </span>
+            {gig.locality_name && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-border bg-background px-2 py-0.5 text-[11px] text-muted-foreground">
+                <MapPin className="h-3 w-3" /> {gig.locality_name}
+              </span>
+            )}
+          </div>
           <h3 className="mt-2 font-display text-lg font-semibold leading-snug">
             {gig.title}
           </h3>
@@ -659,6 +685,14 @@ function GigCard({
             )}
           </div>
         </div>
+        {canReport && (
+          <ReportDialog
+            targetType="gig"
+            targetId={gig.id}
+            reporterId={viewerId}
+            targetLabel={gig.title}
+          />
+        )}
       </div>
       {gig.description && (
         <p className="mt-3 text-sm text-muted-foreground">{gig.description}</p>
@@ -1266,36 +1300,52 @@ function ProviderGigCard({
                   className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface p-3"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-semibold">{s.display_name}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="truncate font-semibold">{s.display_name}</p>
+                      <span
+                        className="inline-flex items-center gap-0.5 rounded-full bg-primary-soft px-1.5 py-0.5 text-[10px] font-medium text-primary"
+                        title={`${s.overlap} matching skill${s.overlap === 1 ? "" : "s"}`}
+                      >
+                        {s.overlap}× match
+                      </span>
+                    </div>
                     <p className="mt-0.5 truncate text-xs text-muted-foreground">
                       {s.skills.join(" · ")}
                     </p>
                   </div>
-                  {tid ? (
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      className="h-9 shrink-0 rounded-full text-xs"
-                      onClick={() =>
-                        onOpenThread({
-                          id: tid,
-                          gig_id: gig.id,
-                          student_id: s.id,
-                          provider_id: userId,
-                        })
-                      }
-                    >
-                      <Check className="mr-1 h-3 w-3" /> Sent · Open chat
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      className="h-9 shrink-0 rounded-full text-xs"
-                      onClick={() => connect(s)}
-                    >
-                      Connect
-                    </Button>
-                  )}
+                  <div className="flex shrink-0 items-center gap-1">
+                    <ReportDialog
+                      targetType="user"
+                      targetId={s.id}
+                      reporterId={userId}
+                      targetLabel={s.display_name}
+                    />
+                    {tid ? (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="h-9 rounded-full text-xs"
+                        onClick={() =>
+                          onOpenThread({
+                            id: tid,
+                            gig_id: gig.id,
+                            student_id: s.id,
+                            provider_id: userId,
+                          })
+                        }
+                      >
+                        <Check className="mr-1 h-3 w-3" /> Sent · Open chat
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        className="h-9 rounded-full text-xs"
+                        onClick={() => connect(s)}
+                      >
+                        Connect
+                      </Button>
+                    )}
+                  </div>
                 </div>
               );
             })}
@@ -1543,11 +1593,15 @@ function ChatWindow({
 
 function ProfileTab({
   userId,
+  user,
+  hasLocality,
   skills,
   roles,
   activeRole,
 }: {
   userId: string;
+  user: import("@supabase/supabase-js").User;
+  hasLocality: boolean;
   skills: Skill[];
   roles: AppRole[];
   activeRole: AppRole | null;
@@ -1612,11 +1666,48 @@ function ProfileTab({
     }
   };
 
+  const profileFields = [displayName, location, bio];
+  const completeness = profileCompleteness(profileFields);
+  const completePct = Math.round(completeness * 100);
+  const trustSignals: TrustSignal[] = deriveTrustSignals({
+    emailConfirmedAt: user.email_confirmed_at,
+    phoneConfirmedAt: user.phone_confirmed_at,
+    hasLocality,
+    profileFields,
+    createdAt: user.created_at,
+  });
+
   return (
     <div>
       <h1 className="mb-5 font-display text-2xl font-bold tracking-tight md:text-3xl">
         Your profile
       </h1>
+
+      <div className="mb-5 rounded-3xl border border-border bg-surface p-5 shadow-soft">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Trust & reputation
+            </p>
+            <p className="mt-1 font-display text-lg font-semibold">
+              Profile {completePct}% complete
+            </p>
+          </div>
+          <span className="rounded-full bg-primary-soft px-2.5 py-1 text-xs font-medium text-primary">
+            {trustSignals.length} signal{trustSignals.length === 1 ? "" : "s"}
+          </span>
+        </div>
+        <Progress value={completePct} className="mt-3 h-1.5" />
+        <div className="mt-3">
+          <TrustBadges signals={trustSignals} size="sm" />
+        </div>
+        {completePct < 100 && (
+          <p className="mt-3 text-xs text-muted-foreground">
+            Fill in your name, location, and a short bio to look more trustworthy to people you connect with.
+          </p>
+        )}
+      </div>
+
       <div className="space-y-5 rounded-3xl border border-border bg-surface p-5 shadow-soft md:p-7">
         <div className="space-y-1.5">
           <Label htmlFor="n">Name</Label>
