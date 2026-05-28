@@ -1666,11 +1666,48 @@ function ProfileTab({
     }
   };
 
+  const profileFields = [displayName, location, bio];
+  const completeness = profileCompleteness(profileFields);
+  const completePct = Math.round(completeness * 100);
+  const trustSignals: TrustSignal[] = deriveTrustSignals({
+    emailConfirmedAt: user.email_confirmed_at,
+    phoneConfirmedAt: user.phone_confirmed_at,
+    hasLocality,
+    profileFields,
+    createdAt: user.created_at,
+  });
+
   return (
     <div>
       <h1 className="mb-5 font-display text-2xl font-bold tracking-tight md:text-3xl">
         Your profile
       </h1>
+
+      <div className="mb-5 rounded-3xl border border-border bg-surface p-5 shadow-soft">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Trust & reputation
+            </p>
+            <p className="mt-1 font-display text-lg font-semibold">
+              Profile {completePct}% complete
+            </p>
+          </div>
+          <span className="rounded-full bg-primary-soft px-2.5 py-1 text-xs font-medium text-primary">
+            {trustSignals.length} signal{trustSignals.length === 1 ? "" : "s"}
+          </span>
+        </div>
+        <Progress value={completePct} className="mt-3 h-1.5" />
+        <div className="mt-3">
+          <TrustBadges signals={trustSignals} size="sm" />
+        </div>
+        {completePct < 100 && (
+          <p className="mt-3 text-xs text-muted-foreground">
+            Fill in your name, location, and a short bio to look more trustworthy to people you connect with.
+          </p>
+        )}
+      </div>
+
       <div className="space-y-5 rounded-3xl border border-border bg-surface p-5 shadow-soft md:p-7">
         <div className="space-y-1.5">
           <Label htmlFor="n">Name</Label>
