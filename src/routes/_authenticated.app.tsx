@@ -639,23 +639,33 @@ function StudentFeed({
 
 function GigCard({
   gig,
+  viewerId,
   appliedThreadId,
   onApply,
   onOpen,
 }: {
   gig: Gig;
+  viewerId: string;
   appliedThreadId: string | null;
   onApply: () => void;
   onOpen: () => void;
 }) {
   const isApplied = !!appliedThreadId;
+  const canReport = viewerId !== gig.provider_id;
   return (
     <article className="rounded-3xl border border-border bg-surface p-5 shadow-soft">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1">
-          <span className="rounded-full bg-primary-soft px-3 py-0.5 text-xs font-medium text-primary">
-            {gig.category}
-          </span>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="rounded-full bg-primary-soft px-3 py-0.5 text-xs font-medium text-primary">
+              {gig.category}
+            </span>
+            {gig.locality_name && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-border bg-background px-2 py-0.5 text-[11px] text-muted-foreground">
+                <MapPin className="h-3 w-3" /> {gig.locality_name}
+              </span>
+            )}
+          </div>
           <h3 className="mt-2 font-display text-lg font-semibold leading-snug">
             {gig.title}
           </h3>
@@ -673,6 +683,14 @@ function GigCard({
             )}
           </div>
         </div>
+        {canReport && (
+          <ReportDialog
+            targetType="gig"
+            targetId={gig.id}
+            reporterId={viewerId}
+            targetLabel={gig.title}
+          />
+        )}
       </div>
       {gig.description && (
         <p className="mt-3 text-sm text-muted-foreground">{gig.description}</p>
