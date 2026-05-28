@@ -76,22 +76,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       meta: [
         { charSet: "utf-8" },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
-        { title: "Floq — Quick gigs near you" },
+        { title: "Fledg — Quick gigs near you" },
         {
           name: "description",
           content:
-            "Floq is a hyper-local marketplace for quick gigs near you — tutoring, design, photography, events, errands and more. Find and post work in your town.",
+            "Fledg is a hyper-local marketplace for quick gigs near you — tutoring, design, photography, events, errands and more. Find and post work in your town.",
         },
-        { name: "author", content: "Floq" },
+        { name: "author", content: "Fledg" },
         { property: "og:type", content: "website" },
-        { property: "og:title", content: "Floq — Quick gigs near you" },
+        { property: "og:title", content: "Fledg — Quick gigs near you" },
         {
           property: "og:description",
           content:
             "Find local micro-gigs near you — tutoring, design, photography, events, errands and more.",
         },
         { name: "twitter:card", content: "summary" },
-        { name: "twitter:title", content: "Floq — Quick gigs near you" },
+        { name: "twitter:title", content: "Fledg — Quick gigs near you" },
         { name: "twitter:description", content: "Quick gigs near you. Tutoring, design, photography, events, errands and more." },
       ],
       links: [
