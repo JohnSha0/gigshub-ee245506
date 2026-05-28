@@ -47,6 +47,9 @@ import {
 import { useLocalityPrefs } from "@/hooks/useLocalityPrefs";
 import { LocalitySwitcher } from "@/components/LocalitySwitcher";
 import { fetchLocalities, type Locality } from "@/lib/locality";
+import { TrustBadges, deriveTrustSignals, profileCompleteness, type TrustSignal } from "@/components/TrustBadges";
+import { ReportDialog } from "@/components/ReportDialog";
+import { Progress } from "@/components/ui/progress";
 
 export const Route = createFileRoute("/_authenticated/app")({
   beforeLoad: async () => {
