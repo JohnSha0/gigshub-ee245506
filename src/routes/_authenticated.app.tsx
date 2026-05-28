@@ -1593,11 +1593,15 @@ function ChatWindow({
 
 function ProfileTab({
   userId,
+  user,
+  hasLocality,
   skills,
   roles,
   activeRole,
 }: {
   userId: string;
+  user: import("@supabase/supabase-js").User;
+  hasLocality: boolean;
   skills: Skill[];
   roles: AppRole[];
   activeRole: AppRole | null;
