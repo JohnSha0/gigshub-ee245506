@@ -28,6 +28,7 @@ function StudentOnboarding() {
   const { user } = useAuth();
   const [displayName, setDisplayName] = useState("");
   const [location, setLocation] = useState("Kuravilangad");
+  const [phone, setPhone] = useState("");
   const [bio, setBio] = useState("");
   const [skills, setSkills] = useState<Skill[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -43,13 +44,21 @@ function StudentOnboarding() {
       if (user) {
         const { data: profile } = await supabase
           .from("profiles")
-          .select("display_name, location, bio")
+          .select("display_name, location, bio, phone")
           .eq("id", user.id)
           .maybeSingle();
         if (profile) {
           setDisplayName(profile.display_name ?? "");
           setLocation(profile.location ?? "Kuravilangad");
           setBio(profile.bio ?? "");
+          setPhone(profile.phone ?? "");
+        }
+        const { data: existing } = await supabase
+          .from("profile_skills")
+          .select("skill_id")
+          .eq("profile_id", user.id);
+        if (existing && existing.length) {
+          setSelected(new Set(existing.map((r) => r.skill_id)));
         }
       }
     })();
@@ -65,7 +74,10 @@ function StudentOnboarding() {
   };
 
   const save = async () => {
-    if (!user) return;
+    if (!user) {
+      toast.error("You're signed out — please sign in again.");
+      return;
+    }
     if (!displayName.trim()) {
       toast.error("Add your name");
       return;
@@ -74,19 +86,28 @@ function StudentOnboarding() {
       toast.error("Pick at least one skill");
       return;
     }
+    const cleanedPhone = phone.trim();
+    if (cleanedPhone && !/^[+\d][\d\s\-()]{5,}$/.test(cleanedPhone)) {
+      toast.error("Enter a valid phone number, or leave it blank.");
+      return;
+    }
     setSaving(true);
     try {
+      // Upsert ensures we don't fail if the profile row wasn't created yet.
       const { error: pErr } = await supabase
         .from("profiles")
-        .update({
-          display_name: displayName.trim(),
-          location: location.trim() || null,
-          bio: bio.trim() || null,
-        })
-        .eq("id", user.id);
+        .upsert(
+          {
+            id: user.id,
+            display_name: displayName.trim(),
+            location: location.trim() || null,
+            bio: bio.trim() || null,
+            phone: cleanedPhone || null,
+          },
+          { onConflict: "id" },
+        );
       if (pErr) throw pErr;
 
-      // Replace skills
       await supabase.from("profile_skills").delete().eq("profile_id", user.id);
       const rows = Array.from(selected).map((skill_id) => ({
         profile_id: user.id,
@@ -98,7 +119,7 @@ function StudentOnboarding() {
       toast.success("Profile saved!");
       navigate({ to: "/app" });
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Could not save";
+      const message = err instanceof Error ? err.message : "Could not save your profile. Please try again.";
       toast.error(message);
     } finally {
       setSaving(false);
@@ -113,10 +134,10 @@ function StudentOnboarding() {
 
       <main className="mx-auto max-w-2xl px-6 pb-24 pt-4">
         <h1 className="font-display text-3xl font-bold tracking-tight">
-          Set up your student profile
+          Set up your profile
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Tell providers a bit about you and pick your skills.
+          A few quick details so people nearby can find you for the right gigs.
         </p>
 
         <div className="mt-8 space-y-5 rounded-3xl border border-border bg-surface p-5 shadow-soft md:p-7">
@@ -137,10 +158,24 @@ function StudentOnboarding() {
               id="loc"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="Kuravilangad"
+              placeholder="Town or neighbourhood"
               className="h-11 rounded-xl"
               maxLength={80}
             />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="phone">Phone <span className="text-xs text-muted-foreground">(optional)</span></Label>
+            <Input
+              id="phone"
+              type="tel"
+              inputMode="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+91 98765 43210"
+              className="h-11 rounded-xl"
+              maxLength={20}
+            />
+            <p className="text-xs text-muted-foreground">Only shared with people you connect with.</p>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="bio">Short bio</Label>
@@ -148,7 +183,7 @@ function StudentOnboarding() {
               id="bio"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              placeholder="One or two lines about you, your studies, availability."
+              placeholder="A line or two about you — what you do and when you're free."
               className="min-h-[88px] rounded-xl"
               maxLength={280}
             />

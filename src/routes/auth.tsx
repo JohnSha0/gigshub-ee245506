@@ -48,7 +48,7 @@ function AuthPage() {
         },
       });
       if (error) throw error;
-      toast.success("Check your inbox for the 6-digit code");
+      toast.success("Check your inbox — tap the link or enter the code");
       navigate({ to: "/auth/otp", search: { contact: parsed.data, channel: "email" } });
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Could not send code");
@@ -72,7 +72,7 @@ function AuthPage() {
       <main className="mx-auto max-w-md px-6 pb-12 pt-4">
         <h1 className="font-display text-3xl font-bold tracking-tight">Welcome 👋</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Sign in with your email — we'll mail you a 6-digit code. No password needed.
+          Enter your email — we'll send you a secure sign-in link (and a backup code). No password needed.
         </p>
 
         <form onSubmit={submit} className="mt-6 space-y-4">
@@ -97,12 +97,12 @@ function AuthPage() {
             disabled={loading}
             className="h-12 w-full rounded-full text-sm font-semibold"
           >
-            {loading ? "Sending code…" : "Send me a login code"}
+            {loading ? "Sending…" : "Email me a sign-in link"}
           </Button>
         </form>
 
         <p className="mt-6 rounded-2xl border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
-          Phone (SMS) login is coming soon.
+          Tap the link from your inbox to sign in, or enter the backup code on the next screen. Phone (SMS) login is coming soon.
         </p>
       </main>
     </div>
