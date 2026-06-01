@@ -94,10 +94,11 @@ function OtpPage() {
       </header>
 
       <main className="mx-auto max-w-md px-6 pb-12 pt-4">
-        <h1 className="font-display text-3xl font-bold tracking-tight">Enter your code</h1>
+        <h1 className="font-display text-3xl font-bold tracking-tight">Check your inbox</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          We sent a 6-digit code to{" "}
-          <span className="font-medium text-foreground">{contact}</span>.
+          We sent a sign-in link to{" "}
+          <span className="font-medium text-foreground">{contact}</span>. Tap the link in the email,
+          or enter the 6-digit backup code below.
         </p>
 
         <div className="mt-8 flex justify-center">
