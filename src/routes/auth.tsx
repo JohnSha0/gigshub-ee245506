@@ -48,7 +48,7 @@ function AuthPage() {
         },
       });
       if (error) throw error;
-      toast.success("Check your inbox for the 6-digit code");
+      toast.success("Check your inbox — tap the link or enter the code");
       navigate({ to: "/auth/otp", search: { contact: parsed.data, channel: "email" } });
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Could not send code");
