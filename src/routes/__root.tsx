@@ -84,6 +84,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         },
         { name: "author", content: "Fledg" },
         { property: "og:type", content: "website" },
+        { property: "og:site_name", content: "Fledg" },
         { property: "og:title", content: "Fledg — Quick gigs near you" },
         {
           property: "og:description",
@@ -110,6 +111,29 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         {
           rel: "stylesheet",
           href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap",
+        },
+      ],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "Organization",
+                name: "Fledg",
+                url: "https://fledg.lovable.app",
+                logo: "https://fledg.lovable.app/favicon.png",
+              },
+              {
+                "@type": "WebSite",
+                name: "Fledg",
+                url: "https://fledg.lovable.app",
+                description:
+                  "Hyper-local marketplace for quick gigs near you — tutoring, design, photography, events and errands.",
+              },
+            ],
+          }),
         },
       ],
     }),
