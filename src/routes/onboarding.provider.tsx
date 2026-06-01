@@ -30,11 +30,8 @@ function ProviderOnboarding() {
   useEffect(() => {
     void (async () => {
       if (!user) return;
-      const { data } = await supabase
-        .from("profiles")
-        .select("display_name, location, bio, phone")
-        .eq("id", user.id)
-        .maybeSingle();
+      const { data } = await supabase.rpc("get_my_profile");
+
       if (data) {
         setDisplayName(data.display_name ?? "");
         setLocation(data.location ?? "Kuravilangad");

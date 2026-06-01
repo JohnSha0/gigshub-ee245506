@@ -42,11 +42,8 @@ function StudentOnboarding() {
         .order("name");
       setSkills(data ?? []);
       if (user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("display_name, location, bio, phone")
-          .eq("id", user.id)
-          .maybeSingle();
+        const { data: profile } = await supabase.rpc("get_my_profile");
+
         if (profile) {
           setDisplayName(profile.display_name ?? "");
           setLocation(profile.location ?? "Kuravilangad");
