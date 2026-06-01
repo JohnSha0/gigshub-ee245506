@@ -6,13 +6,21 @@ import { BRAND_NAME, BRAND_TAGLINE, BrandMark, BrandGlyph } from "@/components/B
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: `${BRAND_NAME} — ${BRAND_TAGLINE}` },
+      { title: `${BRAND_NAME} — Hyper-local marketplace for quick gigs` },
       {
         name: "description",
         content:
-          "Fledg is a hyper-local marketplace for quick gigs near you. Find tutoring, design, photography, event help, errands and more — in your town.",
+          "Find or post quick local gigs on Fledg — tutoring, design, photography, events and errands in your town. Live in Kuravilangad, Kerala.",
       },
+      { property: "og:title", content: `${BRAND_NAME} — Hyper-local marketplace for quick gigs` },
+      {
+        property: "og:description",
+        content:
+          "Quick gigs near you, posted by neighbours. Tutoring, design, photography, events and errands — match, chat, get paid.",
+      },
+      { property: "og:url", content: "https://fledg.lovable.app/" },
     ],
+    links: [{ rel: "canonical", href: "https://fledg.lovable.app/" }],
   }),
   beforeLoad: async () => {
     const { data } = await supabase.auth.getSession();
