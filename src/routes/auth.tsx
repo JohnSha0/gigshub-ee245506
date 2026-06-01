@@ -104,12 +104,6 @@ function AuthPage() {
         <p className="mt-6 rounded-2xl border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
           Tap the link from your inbox to sign in, or enter the backup code on the next screen. Phone (SMS) login is coming soon.
         </p>
-          </Button>
-        </form>
-
-        <p className="mt-6 rounded-2xl border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
-          Phone (SMS) login is coming soon.
-        </p>
       </main>
     </div>
   );
