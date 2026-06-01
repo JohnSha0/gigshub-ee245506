@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { GraduationCap, Briefcase, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
@@ -12,6 +12,14 @@ export const Route = createFileRoute("/onboarding/role")({
   beforeLoad: async () => {
     const { data } = await supabase.auth.getUser();
     if (!data.user) throw redirect({ to: "/auth" });
+    // Admins skip the role picker entirely
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", data.user.id);
+    if ((roles ?? []).some((r) => r.role === "admin")) {
+      throw redirect({ to: "/app" });
+    }
   },
   component: RolePicker,
 });
