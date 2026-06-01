@@ -11,6 +11,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 export const Route = createFileRoute("/onboarding/provider")({
+  head: () => ({
+    meta: [
+      { title: "Set up your gig-poster profile — Fledg" },
+      { name: "description", content: "Add your locality and a short bio so neighbours can find and trust the gigs you post on Fledg." },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   beforeLoad: async () => {
     const { data } = await supabase.auth.getUser();
     if (!data.user) throw redirect({ to: "/auth" });

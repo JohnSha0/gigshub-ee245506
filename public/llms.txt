@@ -1,0 +1,10 @@
+# Fledg
+
+> Fledg is a hyper-local marketplace for quick gigs near you — tutoring, design, photography, events, errands and more, posted by neighbours in your town.
+
+Fledg connects students and freelancers with local providers who need short-term help. Pick your locality, browse gigs nearby, or post one and get matched with people in your area. Now live in Kuravilangad, Kerala and rolling out to nearby towns.
+
+## Pages
+
+- [Home](/): Overview of Fledg — what it is, how it works, and how to get started.
+- [Sign in](/auth): Sign in with a magic link to start posting or applying to gigs.

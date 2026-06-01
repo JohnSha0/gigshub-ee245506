@@ -13,12 +13,16 @@ import { BRAND_NAME, BrandMark } from "@/components/Brand";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: `Sign in — ${BRAND_NAME}` },
+      { title: `Sign in to ${BRAND_NAME} — magic link login` },
       {
         name: "description",
-        content: `Sign in to ${BRAND_NAME} to post gigs or find work near you. Quick email login — no password needed.`,
+        content: `Sign in to ${BRAND_NAME} with a one-tap magic link to post gigs or find quick work near you. No password needed.`,
       },
+      { property: "og:title", content: `Sign in to ${BRAND_NAME}` },
+      { property: "og:description", content: "One-tap magic-link sign-in to post or find quick gigs in your town." },
+      { property: "og:url", content: "https://fledg.lovable.app/auth" },
     ],
+    links: [{ rel: "canonical", href: "https://fledg.lovable.app/auth" }],
   }),
   component: AuthPage,
 });
@@ -70,7 +74,7 @@ function AuthPage() {
       </header>
 
       <main className="mx-auto max-w-md px-6 pb-12 pt-4">
-        <h1 className="font-display text-3xl font-bold tracking-tight">Welcome 👋</h1>
+        <h1 className="font-display text-3xl font-bold tracking-tight">Sign in to {BRAND_NAME}</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Enter your email — we'll send you a secure sign-in link (and a backup code). No password needed.
         </p>

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /app
+Disallow: /onboarding
+Disallow: /auth/otp
+
+Sitemap: https://fledg.lovable.app/sitemap.xml
