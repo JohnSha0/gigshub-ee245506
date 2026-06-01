@@ -507,6 +507,31 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_my_profile: {
+        Args: never
+        Returns: {
+          address_text: string | null
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          display_name: string
+          extra_locality_ids: string[]
+          home_locality_id: string | null
+          id: string
+          is_blocked: boolean
+          lat: number | null
+          lng: number | null
+          location: string | null
+          phone: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
