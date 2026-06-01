@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { GraduationCap, Briefcase, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
