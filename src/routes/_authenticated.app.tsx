@@ -52,6 +52,13 @@ import { ReportDialog } from "@/components/ReportDialog";
 import { Progress } from "@/components/ui/progress";
 
 export const Route = createFileRoute("/_authenticated/app")({
+  head: () => ({
+    meta: [
+      { title: "Dashboard — Fledg" },
+      { name: "description", content: "Your Fledg dashboard. Browse local gigs, post work, and message neighbours in your town." },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   beforeLoad: async () => {
     const { data } = await supabase.auth.getUser();
     if (!data.user) throw redirect({ to: "/auth" });
