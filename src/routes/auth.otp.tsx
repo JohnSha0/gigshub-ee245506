@@ -18,6 +18,13 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/auth/otp")({
+  head: () => ({
+    meta: [
+      { title: "Verify your sign-in code — Fledg" },
+      { name: "description", content: "Enter the 6-digit backup code we just emailed you to finish signing in to Fledg." },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   validateSearch: searchSchema,
   component: OtpPage,
 });
