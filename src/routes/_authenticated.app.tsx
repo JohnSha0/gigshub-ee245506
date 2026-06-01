@@ -140,7 +140,7 @@ function Dashboard() {
       <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-3 py-3 md:px-6">
           <div className="flex items-center gap-2 min-w-0">
-            <img src={BRAND_LOGO_URL} alt="Fledg" className="h-9 w-9 shrink-0 object-contain" />
+            <img src={BRAND_LOGO_URL} alt="Fledg Home" className="h-9 w-9 shrink-0 object-contain" />
             <LocalitySwitcher prefs={prefs} userId={user!.id} />
             <TrustBadges
               iconOnly
