@@ -8,7 +8,13 @@ import { useAuth, type AppRole } from "@/lib/auth";
 import { BrandMark, BRAND_NAME } from "@/components/Brand";
 
 export const Route = createFileRoute("/onboarding/role")({
-  head: () => ({ meta: [{ title: `Choose your role — ${BRAND_NAME}` }] }),
+  head: () => ({
+    meta: [
+      { title: `Choose your role — ${BRAND_NAME}` },
+      { name: "description", content: "Pick whether you want to find gigs or post gigs on Fledg. You can switch sides anytime." },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   beforeLoad: async () => {
     const { data } = await supabase.auth.getUser();
     if (!data.user) throw redirect({ to: "/auth" });
