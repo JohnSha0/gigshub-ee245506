@@ -16,7 +16,7 @@ export function BrandMark({
     <div className="flex items-center gap-2">
       <img
         src={logoUrl}
-        alt={`${BRAND_NAME} logo`}
+        alt="Fledg — hyper-local gig marketplace"
         className={`${dim} object-contain`}
         loading="eager"
         decoding="async"
