@@ -97,7 +97,13 @@ function AuthPage() {
             disabled={loading}
             className="h-12 w-full rounded-full text-sm font-semibold"
           >
-            {loading ? "Sending code…" : "Send me a login code"}
+            {loading ? "Sending…" : "Email me a sign-in link"}
+          </Button>
+        </form>
+
+        <p className="mt-6 rounded-2xl border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
+          Tap the link from your inbox to sign in, or enter the backup code on the next screen. Phone (SMS) login is coming soon.
+        </p>
           </Button>
         </form>
 
