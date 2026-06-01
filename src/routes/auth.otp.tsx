@@ -47,9 +47,13 @@ function OtpPage() {
         const { data: roles } = await supabase
           .from("user_roles")
           .select("role")
-          .eq("user_id", userId)
-          .limit(1);
-        if (!roles || roles.length === 0) {
+          .eq("user_id", userId);
+        const list = (roles ?? []).map((r) => r.role);
+        if (list.includes("admin")) {
+          navigate({ to: "/app" });
+          return;
+        }
+        if (list.length === 0) {
           navigate({ to: "/onboarding/role" });
           return;
         }
