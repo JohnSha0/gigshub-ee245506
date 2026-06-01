@@ -72,7 +72,7 @@ function AuthPage() {
       <main className="mx-auto max-w-md px-6 pb-12 pt-4">
         <h1 className="font-display text-3xl font-bold tracking-tight">Welcome 👋</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Sign in with your email — we'll mail you a 6-digit code. No password needed.
+          Enter your email — we'll send you a secure sign-in link (and a backup code). No password needed.
         </p>
 
         <form onSubmit={submit} className="mt-6 space-y-4">
