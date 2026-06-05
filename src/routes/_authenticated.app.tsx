@@ -22,7 +22,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth, type AppRole } from "@/lib/auth";
+import { useAuth, type AppRole, type DbRole } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -63,11 +63,15 @@ export const Route = createFileRoute("/_authenticated/app")({
     const { data } = await supabase.auth.getUser();
     if (!data.user) throw redirect({ to: "/auth" });
     // If no role yet, send to role picker.
-    const { data: roles } = await supabase
+    const { data: roles, error: roleError } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id)
       .limit(1);
+    if (roleError) {
+      console.error("[routing:/app] role lookup failed", roleError);
+      throw roleError;
+    }
     if (!roles || roles.length === 0) {
       throw redirect({ to: "/onboarding/role" });
     }
@@ -268,7 +272,7 @@ function RoleToggle({
   active,
   onChange,
 }: {
-  roles: AppRole[];
+  roles: DbRole[];
   active: AppRole | null;
   onChange: (r: AppRole) => void;
 }) {
@@ -1610,7 +1614,7 @@ function ProfileTab({
   user: import("@supabase/supabase-js").User;
   hasLocality: boolean;
   skills: Skill[];
-  roles: AppRole[];
+  roles: DbRole[];
   activeRole: AppRole | null;
 }) {
   const [displayName, setDisplayName] = useState("");

@@ -12,12 +12,13 @@ import { useRouter } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 
 export type AppRole = "student" | "provider";
+export type DbRole = AppRole | "admin";
 
 interface AuthContextValue {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  roles: AppRole[];
+  roles: DbRole[];
   activeRole: AppRole | null;
   setActiveRole: (role: AppRole) => void;
   refreshRoles: () => Promise<void>;
@@ -31,12 +32,12 @@ const ACTIVE_ROLE_KEY = "kgh.activeRole";
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [roles, setRoles] = useState<AppRole[]>([]);
+  const [roles, setRoles] = useState<DbRole[]>([]);
   const [activeRole, setActiveRoleState] = useState<AppRole | null>(null);
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  const loadRoles = async (userId: string): Promise<AppRole[]> => {
+  const loadRoles = async (userId: string): Promise<DbRole[]> => {
     const { data, error } = await supabase
       .from("user_roles")
       .select("role")
@@ -45,7 +46,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error("Failed to load roles", error);
       return [];
     }
-    return (data ?? []).map((r) => r.role as AppRole);
+    return (data ?? []).map((r) => r.role as DbRole);
+  };
+
+  const resolveActiveRole = (r: DbRole[]): AppRole | null => {
+    const appRoles = r.filter((role): role is AppRole => role === "student" || role === "provider");
+    const stored =
+      typeof window !== "undefined"
+        ? (localStorage.getItem(ACTIVE_ROLE_KEY) as AppRole | null)
+        : null;
+    if (stored && appRoles.includes(stored)) return stored;
+    if (appRoles.length > 0) return appRoles[0];
+    return r.includes("admin") ? "provider" : null;
   };
 
   const refreshRoles = async () => {
@@ -56,17 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     const r = await loadRoles(session.user.id);
     setRoles(r);
-    const stored =
-      typeof window !== "undefined"
-        ? (localStorage.getItem(ACTIVE_ROLE_KEY) as AppRole | null)
-        : null;
-    if (stored && r.includes(stored)) {
-      setActiveRoleState(stored);
-    } else if (r.length > 0) {
-      setActiveRoleState(r[0]);
-    } else {
-      setActiveRoleState(null);
-    }
+    setActiveRoleState(resolveActiveRole(r));
   };
 
   useEffect(() => {
@@ -92,13 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setTimeout(() => {
           void loadRoles(newSession.user.id).then((r) => {
             setRoles(r);
-            const stored =
-              typeof window !== "undefined"
-                ? (localStorage.getItem(ACTIVE_ROLE_KEY) as AppRole | null)
-                : null;
-            if (stored && r.includes(stored)) setActiveRoleState(stored);
-            else if (r.length > 0) setActiveRoleState(r[0]);
-            else setActiveRoleState(null);
+            setActiveRoleState(resolveActiveRole(r));
           });
         }, 0);
       } else {
@@ -112,12 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data.session?.user) {
         void loadRoles(data.session.user.id).then((r) => {
           setRoles(r);
-          const stored =
-            typeof window !== "undefined"
-              ? (localStorage.getItem(ACTIVE_ROLE_KEY) as AppRole | null)
-              : null;
-          if (stored && r.includes(stored)) setActiveRoleState(stored);
-          else if (r.length > 0) setActiveRoleState(r[0]);
+          setActiveRoleState(resolveActiveRole(r));
         });
       }
       setLoading(false);
