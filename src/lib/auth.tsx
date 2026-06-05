@@ -12,7 +12,7 @@ import { useRouter } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 
 export type AppRole = "student" | "provider";
-type DbRole = AppRole | "admin";
+export type DbRole = AppRole | "admin";
 
 interface AuthContextValue {
   user: User | null;
