@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { BrandMark } from "@/components/Brand";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
+import { getMyProfile } from "@/lib/profile.functions";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +35,7 @@ interface Skill {
 function StudentOnboarding() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const loadMyProfile = useServerFn(getMyProfile);
   const [displayName, setDisplayName] = useState("");
   const [location, setLocation] = useState("Kuravilangad");
   const [phone, setPhone] = useState("");
@@ -49,7 +52,7 @@ function StudentOnboarding() {
         .order("name");
       setSkills(data ?? []);
       if (user) {
-        const { data: profile } = await supabase.rpc("get_my_profile");
+        const profile = await loadMyProfile();
 
         if (profile) {
           setDisplayName(profile.display_name ?? "");
@@ -66,7 +69,7 @@ function StudentOnboarding() {
         }
       }
     })();
-  }, [user]);
+  }, [loadMyProfile, user]);
 
   const toggle = (id: string) => {
     setSelected((prev) => {
@@ -98,6 +101,7 @@ function StudentOnboarding() {
     setSaving(true);
     try {
       // Upsert ensures we don't fail if the profile row wasn't created yet.
+      console.info("[onboarding:student] saving profile", { userId: user.id });
       const { error: pErr } = await supabase
         .from("profiles")
         .upsert(
@@ -110,15 +114,29 @@ function StudentOnboarding() {
           },
           { onConflict: "id" },
         );
-      if (pErr) throw pErr;
+      if (pErr) {
+        console.error("[onboarding:student] profiles upsert failed", pErr);
+        throw pErr;
+      }
 
-      await supabase.from("profile_skills").delete().eq("profile_id", user.id);
+      console.info("[onboarding:student] replacing profile skills", { count: selected.size });
+      const { error: deleteSkillsErr } = await supabase
+        .from("profile_skills")
+        .delete()
+        .eq("profile_id", user.id);
+      if (deleteSkillsErr) {
+        console.error("[onboarding:student] profile_skills delete failed", deleteSkillsErr);
+        throw deleteSkillsErr;
+      }
       const rows = Array.from(selected).map((skill_id) => ({
         profile_id: user.id,
         skill_id,
       }));
       const { error: sErr } = await supabase.from("profile_skills").insert(rows);
-      if (sErr) throw sErr;
+      if (sErr) {
+        console.error("[onboarding:student] profile_skills insert failed", sErr);
+        throw sErr;
+      }
 
       toast.success("Profile saved!");
       navigate({ to: "/app" });
