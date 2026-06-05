@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { BrandMark } from "@/components/Brand";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
+import { getMyProfile } from "@/lib/profile.functions";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +30,7 @@ export const Route = createFileRoute("/onboarding/provider")({
 function ProviderOnboarding() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const loadMyProfile = useServerFn(getMyProfile);
   const [displayName, setDisplayName] = useState("");
   const [location, setLocation] = useState("Kuravilangad");
   const [phone, setPhone] = useState("");
@@ -37,7 +40,7 @@ function ProviderOnboarding() {
   useEffect(() => {
     void (async () => {
       if (!user) return;
-      const { data } = await supabase.rpc("get_my_profile");
+      const data = await loadMyProfile();
 
       if (data) {
         setDisplayName(data.display_name ?? "");
@@ -46,7 +49,7 @@ function ProviderOnboarding() {
         setPhone(data.phone ?? "");
       }
     })();
-  }, [user]);
+  }, [loadMyProfile, user]);
 
   const save = async () => {
     if (!user) {
@@ -64,6 +67,7 @@ function ProviderOnboarding() {
     }
     setSaving(true);
     try {
+      console.info("[onboarding:provider] saving profile", { userId: user.id });
       const { error } = await supabase
         .from("profiles")
         .upsert(
@@ -76,7 +80,10 @@ function ProviderOnboarding() {
           },
           { onConflict: "id" },
         );
-      if (error) throw error;
+      if (error) {
+        console.error("[onboarding:provider] profiles upsert failed", error);
+        throw error;
+      }
       toast.success("Profile saved!");
       navigate({ to: "/app" });
     } catch (err: unknown) {
