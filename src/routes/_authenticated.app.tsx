@@ -22,7 +22,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth, type AppRole } from "@/lib/auth";
+import { useAuth, type AppRole, type DbRole } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -272,7 +272,7 @@ function RoleToggle({
   active,
   onChange,
 }: {
-  roles: AppRole[];
+  roles: DbRole[];
   active: AppRole | null;
   onChange: (r: AppRole) => void;
 }) {
@@ -1614,7 +1614,7 @@ function ProfileTab({
   user: import("@supabase/supabase-js").User;
   hasLocality: boolean;
   skills: Skill[];
-  roles: AppRole[];
+  roles: DbRole[];
   activeRole: AppRole | null;
 }) {
   const [displayName, setDisplayName] = useState("");
