@@ -73,11 +73,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Set up listener BEFORE fetching the session, per docs.
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    } = supabase.auth.onAuthStateChange((event, newSession) => {
+      // Ignore noisy events (TOKEN_REFRESHED fires hourly + on tab focus;
+      // INITIAL_SESSION fires on every mount). React only to real identity
+      // transitions — otherwise we thrash the router and the query cache.
+      if (
+        event !== "SIGNED_IN" &&
+        event !== "SIGNED_OUT" &&
+        event !== "USER_UPDATED"
+      ) {
+        return;
+      }
       setSession(newSession);
-      queryClient.invalidateQueries();
       router.invalidate();
       if (newSession?.user) {
+        queryClient.invalidateQueries();
         // defer to avoid running queries inside the callback
         setTimeout(() => {
           void loadRoles(newSession.user.id).then((r) => {

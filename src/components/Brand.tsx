@@ -1,8 +1,8 @@
-import logoUrl from "@/assets/floq-logo.png";
+import logoAsset from "@/assets/fledg-mark.png.asset.json";
 
 export const BRAND_NAME = "Fledg";
 export const BRAND_TAGLINE = "Quick gigs near you";
-export const BRAND_LOGO_URL = logoUrl;
+export const BRAND_LOGO_URL = logoAsset.url;
 
 export function BrandMark({
   showName = true,
@@ -15,7 +15,7 @@ export function BrandMark({
   return (
     <div className="flex items-center gap-2">
       <img
-        src={logoUrl}
+        src={BRAND_LOGO_URL}
         alt="Fledg — hyper-local gig marketplace"
         className={`${dim} object-contain`}
         loading="eager"
@@ -31,9 +31,9 @@ export function BrandMark({
 }
 
 /**
- * Minimal line-art monogram derived from the Fledg logo.
- * Use in footers, compact nav, and lightweight branding placements
- * where the full raster logo would feel heavy.
+ * Compact line-art Fledg mark for footers, compact nav, and lightweight
+ * branding placements. Uses the same canonical logo asset as BrandMark so
+ * the visual identity stays consistent across the app.
  */
 export function BrandGlyph({
   className = "",
@@ -43,24 +43,14 @@ export function BrandGlyph({
   size?: number;
 }) {
   return (
-    <svg
+    <img
+      src={BRAND_LOGO_URL}
+      alt={`${BRAND_NAME} mark`}
       width={size}
       height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-label={`${BRAND_NAME} mark`}
-      role="img"
-    >
-      {/* Stylised F + spark — feather-light monogram */}
-      <path d="M6 4h11" />
-      <path d="M6 4v16" />
-      <path d="M6 12h8" />
-      <circle cx="18.5" cy="18.5" r="2" />
-    </svg>
+      className={`inline-block object-contain ${className}`}
+      loading="lazy"
+      decoding="async"
+    />
   );
 }
