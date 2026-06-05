@@ -63,11 +63,15 @@ export const Route = createFileRoute("/_authenticated/app")({
     const { data } = await supabase.auth.getUser();
     if (!data.user) throw redirect({ to: "/auth" });
     // If no role yet, send to role picker.
-    const { data: roles } = await supabase
+    const { data: roles, error: roleError } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id)
       .limit(1);
+    if (roleError) {
+      console.error("[routing:/app] role lookup failed", roleError);
+      throw roleError;
+    }
     if (!roles || roles.length === 0) {
       throw redirect({ to: "/onboarding/role" });
     }
