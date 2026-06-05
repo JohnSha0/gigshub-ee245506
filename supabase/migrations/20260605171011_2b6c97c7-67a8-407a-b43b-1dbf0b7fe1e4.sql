@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "deny all realtime broadcast" ON public.messages;
