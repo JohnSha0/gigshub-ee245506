@@ -75,7 +75,7 @@ export const setAdminUserBlocked = createServerFn({ method: "POST" })
     const { error } = await context.supabase.rpc("set_user_blocked", {
       p_user_id: data.userId,
       p_blocked: data.blocked,
-      p_reason: data.reason || null,
+      p_reason: data.reason || undefined,
     });
     if (error) throw error;
     return { ok: true };
