@@ -4,6 +4,7 @@ import {
   redirect,
   useNavigate,
 } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import {
   Search,
   LogOut,
@@ -16,6 +17,9 @@ import {
   Send,
   X,
   Trash2,
+  ShieldCheck,
+  Users,
+  Flag,
 } from "lucide-react";
 import { BRAND_LOGO_URL } from "@/components/Brand";
 import { toast } from "sonner";
@@ -50,6 +54,7 @@ import { fetchLocalities, type Locality } from "@/lib/locality";
 import { TrustBadges, deriveTrustSignals, profileCompleteness, type TrustSignal } from "@/components/TrustBadges";
 import { ReportDialog } from "@/components/ReportDialog";
 import { Progress } from "@/components/ui/progress";
+import { getAdminOverview, setAdminUserBlocked } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({
