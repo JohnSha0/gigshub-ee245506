@@ -116,6 +116,14 @@ interface Thread {
   student_id: string;
   provider_id: string;
 }
+interface AdminOverviewData {
+  profiles: Array<{ id: string; display_name: string; location: string | null; is_blocked: boolean; created_at: string }>;
+  roles: Array<{ user_id: string; role: DbRole }>;
+  reports: Array<{ id: string; target_type: string; reason: string; status: string; created_at: string }>;
+  localityRequests: Array<{ id: string; custom_name: string | null; status: string; created_at: string }>;
+  adminActions: Array<{ id: string; action: string; target_type: string; reason: string | null; created_at: string }>;
+  gigCount: number;
+}
 
 const CATEGORIES = [
   "All",
@@ -170,7 +178,7 @@ function Dashboard() {
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-3 py-3 md:px-6">
           <div className="flex items-center gap-2 min-w-0">
             <img src={BRAND_LOGO_URL} alt="Fledg Home" className="h-9 w-9 shrink-0 object-contain" />
-            <LocalitySwitcher prefs={prefs} userId={user!.id} />
+            <LocalitySwitcher prefs={prefs} userId={user.id} />
             <TrustBadges
               iconOnly
               size="xs"
@@ -290,6 +298,151 @@ function Dashboard() {
           )}
         </SheetContent>
       </Sheet>
+    </div>
+  );
+}
+
+function AdminDashboard() {
+  const loadAdminOverview = useServerFn(getAdminOverview);
+  const blockUser = useServerFn(setAdminUserBlocked);
+  const [data, setData] = useState<AdminOverviewData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      setData((await loadAdminOverview()) as AdminOverviewData);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Admin data failed to load";
+      setError(message);
+      console.error("[admin] overview load failed", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const toggleBlocked = async (profile: AdminOverviewData["profiles"][number]) => {
+    try {
+      await blockUser({
+        data: {
+          userId: profile.id,
+          blocked: !profile.is_blocked,
+          reason: profile.is_blocked ? "Unblocked from admin dashboard" : "Blocked from admin dashboard",
+        },
+      });
+      toast.success(profile.is_blocked ? "User unblocked" : "User blocked");
+      void load();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not update user");
+    }
+  };
+
+  const adminCount = data?.roles.filter((r) => r.role === "admin").length ?? 0;
+  const userCount = data?.profiles.length ?? 0;
+  const pendingReports = data?.reports.filter((r) => r.status === "pending").length ?? 0;
+  const pendingLocalities = data?.localityRequests.filter((r) => r.status === "pending").length ?? 0;
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="font-display text-2xl font-bold tracking-tight md:text-3xl">Admin dashboard</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Moderation, locality requests, and account oversight.</p>
+        </div>
+        <Button variant="secondary" onClick={() => void load()} disabled={loading} className="h-10 rounded-full text-sm">
+          {loading ? "Loading…" : "Refresh"}
+        </Button>
+      </div>
+
+      {error && (
+        <div className="rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+          {error}
+        </div>
+      )}
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <AdminMetric icon={<Users className="h-4 w-4" />} label="Users" value={userCount} />
+        <AdminMetric icon={<Briefcase className="h-4 w-4" />} label="Gigs" value={data?.gigCount ?? 0} />
+        <AdminMetric icon={<Flag className="h-4 w-4" />} label="Pending reports" value={pendingReports} />
+        <AdminMetric icon={<ShieldCheck className="h-4 w-4" />} label="Admins" value={adminCount} />
+      </div>
+
+      <section className="rounded-3xl border border-border bg-surface p-5 shadow-soft">
+        <h2 className="font-display text-lg font-semibold">Recent users</h2>
+        <div className="mt-4 space-y-2">
+          {(data?.profiles ?? []).slice(0, 8).map((profile) => (
+            <div key={profile.id} className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-background p-3">
+              <div className="min-w-0">
+                <p className="truncate font-semibold">{profile.display_name}</p>
+                <p className="truncate text-xs text-muted-foreground">{profile.location || "No location"}</p>
+              </div>
+              <Button
+                size="sm"
+                variant={profile.is_blocked ? "secondary" : "destructive"}
+                className="h-8 rounded-full text-xs"
+                onClick={() => void toggleBlocked(profile)}
+              >
+                {profile.is_blocked ? "Unblock" : "Block"}
+              </Button>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <div className="grid gap-5 lg:grid-cols-2">
+        <section className="rounded-3xl border border-border bg-surface p-5 shadow-soft">
+          <h2 className="font-display text-lg font-semibold">Reports</h2>
+          <AdminList
+            rows={(data?.reports ?? []).map((r) => ({
+              id: r.id,
+              title: `${r.reason} · ${r.target_type}`,
+              meta: r.status,
+            }))}
+            empty="No reports yet."
+          />
+        </section>
+        <section className="rounded-3xl border border-border bg-surface p-5 shadow-soft">
+          <h2 className="font-display text-lg font-semibold">Locality requests</h2>
+          <AdminList
+            rows={(data?.localityRequests ?? []).map((r) => ({
+              id: r.id,
+              title: r.custom_name || "Unnamed locality",
+              meta: r.status,
+            }))}
+            empty={pendingLocalities === 0 ? "No pending locality requests." : "No locality requests."}
+          />
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function AdminMetric({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
+  return (
+    <div className="rounded-3xl border border-border bg-surface p-4 shadow-soft">
+      <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">{icon}{label}</div>
+      <p className="mt-2 font-display text-2xl font-bold">{value}</p>
+    </div>
+  );
+}
+
+function AdminList({ rows, empty }: { rows: Array<{ id: string; title: string; meta: string }>; empty: string }) {
+  if (rows.length === 0) return <p className="mt-4 text-sm text-muted-foreground">{empty}</p>;
+  return (
+    <div className="mt-4 space-y-2">
+      {rows.slice(0, 6).map((row) => (
+        <div key={row.id} className="rounded-2xl border border-border bg-background p-3">
+          <p className="truncate text-sm font-semibold">{row.title}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{row.meta}</p>
+        </div>
+      ))}
     </div>
   );
 }
