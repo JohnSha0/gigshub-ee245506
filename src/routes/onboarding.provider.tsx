@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 export const Route = createFileRoute("/onboarding/provider")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Set up your gig-poster profile — Fledg" },

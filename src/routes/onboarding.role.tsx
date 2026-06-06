@@ -8,6 +8,7 @@ import { useAuth, type AppRole } from "@/lib/auth";
 import { BrandMark, BRAND_NAME } from "@/components/Brand";
 
 export const Route = createFileRoute("/onboarding/role")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: `Choose your role — ${BRAND_NAME}` },
