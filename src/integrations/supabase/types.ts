@@ -532,13 +532,6 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
       nearby_localities: {
         Args: { p_lat: number; p_lng: number; p_radius_km?: number }
         Returns: {
