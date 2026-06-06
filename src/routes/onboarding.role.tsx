@@ -8,6 +8,7 @@ import { useAuth, type AppRole } from "@/lib/auth";
 import { BrandMark, BRAND_NAME } from "@/components/Brand";
 
 export const Route = createFileRoute("/onboarding/role")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: `Choose your role — ${BRAND_NAME}` },
@@ -27,7 +28,7 @@ export const Route = createFileRoute("/onboarding/role")({
       console.error("[routing:/onboarding/role] role lookup failed", roleError);
       throw roleError;
     }
-    if ((roles ?? []).some((r) => r.role === "admin")) {
+    if ((roles ?? []).length > 0) {
       throw redirect({ to: "/app" });
     }
   },

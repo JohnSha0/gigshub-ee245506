@@ -51,21 +51,25 @@ function OtpPage() {
       toast.success("Verified!");
       const userId = data.user?.id;
       if (userId) {
-        const { data: roles } = await supabase
+        const { data: roles, error: roleError } = await supabase
           .from("user_roles")
           .select("role")
           .eq("user_id", userId);
+        if (roleError) {
+          console.error("[auth:otp] role lookup failed", roleError);
+          throw roleError;
+        }
         const list = (roles ?? []).map((r) => r.role);
         if (list.includes("admin")) {
-          navigate({ to: "/app" });
+          navigate({ to: "/app", replace: true });
           return;
         }
         if (list.length === 0) {
-          navigate({ to: "/onboarding/role" });
+          navigate({ to: "/onboarding/role", replace: true });
           return;
         }
       }
-      navigate({ to: "/app" });
+      navigate({ to: "/app", replace: true });
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Invalid code");
     } finally {

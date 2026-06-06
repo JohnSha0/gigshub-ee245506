@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .eq("user_id", userId);
     if (error) {
       console.error("Failed to load roles", error);
-      return [];
+      throw error;
     }
     return (data ?? []).map((r) => r.role as DbRole);
   };
@@ -66,9 +66,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setActiveRoleState(null);
       return;
     }
-    const r = await loadRoles(session.user.id);
-    setRoles(r);
-    setActiveRoleState(resolveActiveRole(r));
+    try {
+      const r = await loadRoles(session.user.id);
+      setRoles(r);
+      setActiveRoleState(resolveActiveRole(r));
+    } catch {
+      setRoles([]);
+      setActiveRoleState(null);
+    }
   };
 
   useEffect(() => {
@@ -89,26 +94,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(newSession);
       router.invalidate();
       if (newSession?.user) {
+        setLoading(true);
         queryClient.invalidateQueries();
         // defer to avoid running queries inside the callback
         setTimeout(() => {
           void loadRoles(newSession.user.id).then((r) => {
             setRoles(r);
             setActiveRoleState(resolveActiveRole(r));
-          });
+          }).catch(() => {
+            setRoles([]);
+            setActiveRoleState(null);
+          }).finally(() => setLoading(false));
         }, 0);
       } else {
         setRoles([]);
         setActiveRoleState(null);
+        setLoading(false);
       }
     });
 
-    void supabase.auth.getSession().then(({ data }) => {
+    void supabase.auth.getSession().then(async ({ data }) => {
       setSession(data.session);
       if (data.session?.user) {
-        void loadRoles(data.session.user.id).then((r) => {
+        await loadRoles(data.session.user.id).then((r) => {
           setRoles(r);
           setActiveRoleState(resolveActiveRole(r));
+        }).catch(() => {
+          setRoles([]);
+          setActiveRoleState(null);
         });
       }
       setLoading(false);
