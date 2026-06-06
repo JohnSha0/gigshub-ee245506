@@ -28,7 +28,7 @@ export const Route = createFileRoute("/onboarding/role")({
       console.error("[routing:/onboarding/role] role lookup failed", roleError);
       throw roleError;
     }
-    if ((roles ?? []).some((r) => r.role === "admin")) {
+    if ((roles ?? []).length > 0) {
       throw redirect({ to: "/app" });
     }
   },
