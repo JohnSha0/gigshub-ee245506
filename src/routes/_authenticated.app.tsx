@@ -130,12 +130,17 @@ const CATEGORIES = [
 ];
 
 function Dashboard() {
-  const { user, roles, activeRole, setActiveRole, signOut } = useAuth();
+  const { user, loading: authLoading, roles, activeRole, setActiveRole, signOut } = useAuth();
   const navigate = useNavigate();
-  const [tab, setTab] = useState<"home" | "chats" | "profile">("home");
+  const isAdmin = roles.includes("admin");
+  const [tab, setTab] = useState<"admin" | "home" | "chats" | "profile">("home");
   const [skills, setSkills] = useState<Skill[]>([]);
   const [openThread, setOpenThread] = useState<Thread | null>(null);
   const prefs = useLocalityPrefs(user?.id);
+
+  useEffect(() => {
+    if (isAdmin && tab === "home") setTab("admin");
+  }, [isAdmin, tab]);
 
   useEffect(() => {
     void supabase
@@ -149,6 +154,14 @@ function Dashboard() {
     await signOut();
     navigate({ to: "/" });
   };
+
+  if (authLoading || !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-6">
+        <p className="text-sm text-muted-foreground">Loading your account…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -188,9 +201,10 @@ function Dashboard() {
       </header>
 
       <main className="mx-auto max-w-5xl px-4 py-6 md:px-6">
+        {tab === "admin" && isAdmin && <AdminDashboard />}
         {tab === "home" && activeRole === "student" && (
           <StudentFeed
-            userId={user!.id}
+            userId={user.id}
             localityIds={prefs.effectiveIds}
             homeLocalityId={prefs.homeId}
             selectedLocalities={prefs.selected}
@@ -200,19 +214,19 @@ function Dashboard() {
         )}
         {tab === "home" && activeRole === "provider" && (
           <ProviderHome
-            userId={user!.id}
+            userId={user.id}
             skills={skills}
             homeLocalityId={prefs.homeId}
             onOpenThread={(t) => setOpenThread(t)}
           />
         )}
         {tab === "chats" && (
-          <ChatsList userId={user!.id} onOpen={(t) => setOpenThread(t)} />
+          <ChatsList userId={user.id} onOpen={(t) => setOpenThread(t)} />
         )}
         {tab === "profile" && (
           <ProfileTab
-            userId={user!.id}
-            user={user!}
+            userId={user.id}
+            user={user}
             hasLocality={!!prefs.homeId}
             skills={skills}
             roles={roles}
@@ -223,7 +237,15 @@ function Dashboard() {
 
       {/* Bottom nav */}
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur">
-        <div className="mx-auto grid max-w-5xl grid-cols-3">
+        <div className={`mx-auto grid max-w-5xl ${isAdmin ? "grid-cols-4" : "grid-cols-3"}`}>
+          {isAdmin && (
+            <NavBtn
+              active={tab === "admin"}
+              onClick={() => setTab("admin")}
+              icon={<ShieldCheck className="h-5 w-5" />}
+              label="Admin"
+            />
+          )}
           <NavBtn
             active={tab === "home"}
             onClick={() => setTab("home")}
