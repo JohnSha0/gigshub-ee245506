@@ -145,6 +145,7 @@ function Dashboard() {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [openThread, setOpenThread] = useState<Thread | null>(null);
   const prefs = useLocalityPrefs(user?.id);
+  const effectiveTab = isAdmin && tab === "home" ? "admin" : tab;
 
   useEffect(() => {
     if (isAdmin && tab === "home") setTab("admin");
@@ -209,8 +210,8 @@ function Dashboard() {
       </header>
 
       <main className="mx-auto max-w-5xl px-4 py-6 md:px-6">
-        {tab === "admin" && isAdmin && <AdminDashboard />}
-        {tab === "home" && activeRole === "student" && (
+        {effectiveTab === "admin" && isAdmin && <AdminDashboard />}
+        {effectiveTab === "home" && activeRole === "student" && (
           <StudentFeed
             userId={user.id}
             localityIds={prefs.effectiveIds}
@@ -220,7 +221,7 @@ function Dashboard() {
             onOpenThread={(t) => setOpenThread(t)}
           />
         )}
-        {tab === "home" && activeRole === "provider" && (
+        {effectiveTab === "home" && activeRole === "provider" && (
           <ProviderHome
             userId={user.id}
             skills={skills}
@@ -228,10 +229,10 @@ function Dashboard() {
             onOpenThread={(t) => setOpenThread(t)}
           />
         )}
-        {tab === "chats" && (
+        {effectiveTab === "chats" && (
           <ChatsList userId={user.id} onOpen={(t) => setOpenThread(t)} />
         )}
-        {tab === "profile" && (
+        {effectiveTab === "profile" && (
           <ProfileTab
             userId={user.id}
             user={user}
@@ -248,14 +249,14 @@ function Dashboard() {
         <div className={`mx-auto grid max-w-5xl ${isAdmin ? "grid-cols-4" : "grid-cols-3"}`}>
           {isAdmin && (
             <NavBtn
-              active={tab === "admin"}
+              active={effectiveTab === "admin"}
               onClick={() => setTab("admin")}
               icon={<ShieldCheck className="h-5 w-5" />}
               label="Admin"
             />
           )}
           <NavBtn
-            active={tab === "home"}
+            active={effectiveTab === "home"}
             onClick={() => setTab("home")}
             icon={
               activeRole === "provider" ? (
@@ -267,13 +268,13 @@ function Dashboard() {
             label={activeRole === "provider" ? "Gigs" : "Find"}
           />
           <NavBtn
-            active={tab === "chats"}
+            active={effectiveTab === "chats"}
             onClick={() => setTab("chats")}
             icon={<MessageCircle className="h-5 w-5" />}
             label="Chats"
           />
           <NavBtn
-            active={tab === "profile"}
+            active={effectiveTab === "profile"}
             onClick={() => setTab("profile")}
             icon={<GraduationCap className="h-5 w-5" />}
             label="Profile"
